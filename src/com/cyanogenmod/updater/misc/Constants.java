@@ -40,8 +40,15 @@ public class Constants {
 
     // Keys
     public static final String KEY_UPDATE_INFO = Customization.PACKAGE_FIRST_NAME + ".fullUpdateList";
+    public static final String KEY_UPDATE_FRAGMENT = Customization.PACKAGE_FIRST_NAME + ".update_fragment";
     public static final String KEY_AVAILABLE_UPDATES = Customization.PACKAGE_FIRST_NAME + ".availableUpdates";
-    public static final String KEY_UPDATE_PREFERENCE = "update_preference";
+    public static final String KEY_AVAILABLE_UPDATES_PREFERENCE = Customization.PACKAGE_FIRST_NAME + ".available_updates_preference";
+    public static final String KEY_AVAILABLE_UPDATES_FRAGMENT = Customization.PACKAGE_FIRST_NAME + ".available_updates_fragment";
+    public static final String KEY_UPDATE_TYPE_PREFERENCE = Customization.PACKAGE_FIRST_NAME + ".update_type_preference";
+    public static final String KEY_UPDATE_CHECK_PREFERENCE = Customization.PACKAGE_FIRST_NAME + ".update_check_preference";
+    public static final String KEY_NOTIFICATION_PREFERENCE = Customization.PACKAGE_FIRST_NAME + ".notification_preference";
+    public static final String KEY_NOTIFICATION_FRAGMENT = Customization.PACKAGE_FIRST_NAME + ".notification_fragment";
+    public static final String KEY_RINGTONE_PREFERENCE = Customization.PACKAGE_FIRST_NAME + ".ringtone_preference";
 
     // Preferences
     public static final String ENABLE_PREF = "pref_enable_updates";

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2012 The CyanogenMod Project
+
+     Licensed under the GNU GPLv2 license
+
+     The text of the license can be found in the LICENSE file
+     or at https://www.gnu.org/licenses/gpl-2.0.txt
+-->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="@string/notification_pref_key"
+        android:title="@string/notification_pref_title" />
+
+    <RingtonePreference
+        android:defaultValue="@string/empty"
+        android:key="@string/ringtone_pref_key"
+        android:ringtoneType="all"
+        android:shouldDisableView="true"
+        android:showDefault="true"
+        android:showSilent="true"
+        android:title="@string/ringtone_pref_title" >
+    </RingtonePreference>
+
+</PreferenceScreen>

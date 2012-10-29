@@ -10,9 +10,10 @@
 package com.cyanogenmod.updater;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -21,9 +22,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.text.TextUtils;
 
 import com.cyanogenmod.updater.customTypes.UpdateInfo;
+import com.cyanogenmod.updater.preferences.UpdateFragment;
 
 public class UpdatePreference extends Preference implements OnClickListener, OnLongClickListener {
     private static final String TAG = "UpdatePreference";
@@ -34,7 +35,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
     public static final int STYLE_DOWNLOADED = 3;
     public static final int STYLE_INSTALLED = 4;
 
-    private final UpdatesSettings mParent;
+    private final UpdateFragment mParent;
     private ImageView mUpdatesButton;
     private TextView mTitleText;
     private TextView mSummaryText;
@@ -43,14 +44,16 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
     private String mTitle;
     private ProgressBar mProgressBar;
     private UpdateInfo mUpdateInfo = null;
+    private Context mContext;
 
-    public UpdatePreference(UpdatesSettings parent, UpdateInfo ui, String title, int style) {
-        super(parent, null, R.style.UpdatesPreferenceStyle);
+    public UpdatePreference(UpdateFragment parent, UpdateInfo ui, String title, int style) {
+        super(parent.getActivity().getBaseContext(), null, R.style.UpdatesPreferenceStyle);
         setLayoutResource(R.layout.preference_updates);
         mParent = parent;
         mTitle = title;
         mStyle = style;
         mUpdateInfo = ui;
+        mContext = mParent.getActivity().getBaseContext();
     }
 
     @Override
@@ -94,16 +97,16 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
         if (changeLog.equals(mParent.getResources().getString(R.string.no_changelog_alert))
                 || changeLog.equals(mParent.getResources().getString(R.string.failed_to_load_changelog))) {
             // No changelog to show, display a toast
-            Toast.makeText(mParent.getBaseContext(), changeLog, Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, changeLog, Toast.LENGTH_SHORT).show();
         } else {
             // Prepare the dialog box content
-            WebView chngLog = new WebView(mParent);
+            WebView chngLog = new WebView(mContext);
             chngLog.getSettings().setTextZoom(80);
             chngLog.setBackgroundColor(mParent.getResources().getColor(android.R.color.darker_gray));
             chngLog.loadDataWithBaseURL(null, changeLog, "text/html", "utf-8", null);
 
             // Prepare the dialog box
-            AlertDialog.Builder builder = new AlertDialog.Builder(mParent);
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle(mParent.getResources().getString(R.string.changelog_dialog_title));
             builder.setView(chngLog);
             builder.setPositiveButton(R.string.dialog_close, null);
@@ -113,7 +116,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
     }
 
     private void confirmDelete() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mParent);
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.confirm_delete_dialog_title);
         builder.setMessage(R.string.confirm_delete_dialog_message);
         builder.setPositiveButton(R.string.dialog_yes, new DialogInterface.OnClickListener() {
@@ -166,7 +169,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
         return mUpdateInfo;
     }
 
-    public PreferenceActivity getParent() {
+    public UpdateFragment getParent() {
         return mParent;
     }
 

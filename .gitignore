@@ -1,0 +1,15 @@
+lint.xml
+.git
+.project
+.settings
+src/android
+src/libcore
+src/dalvik
+src/com/android
+src/com/google
+src/com/bouncycastle
+src/java
+src/sun
+src/org
+bin
+gen

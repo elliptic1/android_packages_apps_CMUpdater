@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2012 The CyanogenMod Project
+<!--
+     Copyright (C) 2012 The CyanogenMod Project
 
      Licensed under the GNU GPLv2 license
 
@@ -11,13 +12,13 @@
     <!-- General strings -->
     <string name="app_name">CM Updater</string>
     <string name="unknown">Unknown</string>
+    <string name="empty"></string>
 
     <!-- Menu and dialog box strings -->
     <string name="menu_refresh">Refresh</string>
     <string name="menu_delete">Delete</string>
     <string name="menu_delete_all">Delete downloads</string>
     <string name="menu_system_info">System info</string>
-
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_yes">Yes</string>
@@ -26,15 +27,22 @@
     <string name="dialog_close">Close</string>
 
     <!-- Settings strings -->
-    <string name="available_updates_title">Available updates</string>
+    <string name="update_fragment_key">com.cyanogenmod.updater.update_fragment</string>
+    <string name="update_fragment_title">Check for Updates</string>
+    <string name="available_updates_fragment_title">Available updates fragment</string>
+    <string name="available_updates_fragment_key">com.cyanogenmod.updater.available_updates_fragment</string>
+    <string name="available_updates_category_title">Available updates category</string>
+    <string name="available_updates_category_key">com.cyanogenmod.updater.available_updates_category</string>
     <string name="no_available_updates_intro">The last check did not find any available updates. To manually check for new updates, use the Refresh button.</string>
     <string name="new_update_summary">New</string>
     <string name="downloaded_update_summary">Downloaded</string>
     <string name="installed_update_summary">Installed</string>
     <string name="backup_rom_title">Create backup</string>
     <string name="backup_rom_summary">Backup existing ROM before updating</string>
-
     <string name="update_check_title">Check for updates</string>
+    <string name="update_check_key">com.cyanogenmod.updater.update_check_preference</string>
+    <string name="update_type_title">Update types</string>
+    <string name="update_type_key">com.cyanogenmod.updater.update_type_preference</string>
     <string name="check_manual">Manual</string>
     <string name="check_on_boot">On every boot</string>
     <string name="check_twice_daily">Twice daily</string>
@@ -42,8 +50,6 @@
     <string name="check_weekly">Weekly</string>
     <string name="check_bi_weekly">Bi-weekly</string>
     <string name="check_monthly">Monthly</string>
-
-    <string name="update_type_title">Update types</string>
     <string name="type_all">All versions (Stable only)</string>
     <string name="type_all_incl_nightly">All versions (incl. Nightlies)</string>
     <string name="type_new">New versions (Stable only)</string>
@@ -94,4 +100,13 @@
     <string name="no_changelog_alert">No changelog available</string>
     <string name="failed_to_load_changelog">Unable to load changelog</string>
     <string name="changelog_dialog_title">Changelog</string>
+
+    <!-- Notification Settings strings -->
+    <string name="notification_fragment_title">Notification Settings</string>
+    <string name="notification_fragment_key">com.cyanogenmod.updater.notification_fragment</string>
+    <string name="notification_pref_title">Allow Notifications</string>
+    <string name="notification_pref_key">com.cyanogenmod.updater.notification_preference</string>
+    <string name="ringtone_pref_title">Choose Ringtone</string>
+    <string name="ringtone_pref_key">com.cyanogenmod.updater.ringtone_preference</string>
+
 </resources>

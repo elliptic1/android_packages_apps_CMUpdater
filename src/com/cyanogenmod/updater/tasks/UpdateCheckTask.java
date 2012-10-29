@@ -9,35 +9,40 @@
 
 package com.cyanogenmod.updater.tasks;
 
+import android.app.Activity;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
+import android.app.backup.SharedPreferencesBackupHelper;
 import android.content.ComponentName;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.DialogInterface.OnCancelListener;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
-
-import com.cyanogenmod.updater.interfaces.IUpdateCheckService;
-import com.cyanogenmod.updater.interfaces.IUpdateCheckServiceCallback;
 
 import com.cyanogenmod.updater.R;
 import com.cyanogenmod.updater.UpdatesSettings;
+import com.cyanogenmod.updater.interfaces.IUpdateCheckService;
+import com.cyanogenmod.updater.interfaces.IUpdateCheckServiceCallback;
+import com.cyanogenmod.updater.misc.Constants;
 
 public class UpdateCheckTask extends AsyncTask<Void, Void, Void> {
-    private static final String TAG = "UpdateCheckTask";
+    private static final String TAG = "CMUpdater";
 
     private IUpdateCheckService mService;
     private boolean mBound;
     private Intent mServiceIntent;
     private final ProgressDialog mProgressDialog;
-    private final UpdatesSettings mParent;
+    private final Activity mParent;
 
-    public UpdateCheckTask(UpdatesSettings parent) {
+    public UpdateCheckTask(Activity parent) {
         mParent = parent;
-        mProgressDialog = new ProgressDialog(mParent);
+        mProgressDialog = new ProgressDialog(mParent.getApplicationContext());
         mProgressDialog.setTitle(R.string.checking_for_updates);
         mProgressDialog.setMessage(mParent.getResources().getString(R.string.checking_for_updates));
         mProgressDialog.setIndeterminate(true);
@@ -86,7 +91,7 @@ public class UpdateCheckTask extends AsyncTask<Void, Void, Void> {
             mBound = false;
         }
         mParent.stopService(mServiceIntent);
-        mParent.updateLayout();
+        updateLayout();
     }
 
     @Override
@@ -99,8 +104,13 @@ public class UpdateCheckTask extends AsyncTask<Void, Void, Void> {
         if (mProgressDialog != null) {
             mProgressDialog.dismiss();
         }
-        mParent.updateLayout();
+        updateLayout();
         super.onCancelled();
+    }
+
+    private void updateLayout() {
+        PreferenceManager.getDefaultSharedPreferences(mParent)
+                .edit().putBoolean(Constants.CHECK_FOR_UPDATE, true);
     }
 
     /**
