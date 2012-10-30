@@ -10,15 +10,12 @@
 package com.cyanogenmod.updater.tasks;
 
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.app.ProgressDialog;
-import android.app.backup.SharedPreferencesBackupHelper;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -26,7 +23,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.cyanogenmod.updater.R;
-import com.cyanogenmod.updater.UpdatesSettings;
 import com.cyanogenmod.updater.interfaces.IUpdateCheckService;
 import com.cyanogenmod.updater.interfaces.IUpdateCheckServiceCallback;
 import com.cyanogenmod.updater.misc.Constants;
@@ -43,8 +39,8 @@ public class UpdateCheckTask extends AsyncTask<Void, Void, Void> {
     public UpdateCheckTask(Activity parent) {
         mParent = parent;
         mProgressDialog = new ProgressDialog(mParent.getApplicationContext());
-        mProgressDialog.setTitle(R.string.checking_for_updates);
-        mProgressDialog.setMessage(mParent.getResources().getString(R.string.checking_for_updates));
+        mProgressDialog.setTitle(mParent.getString(R.string.checking_for_updates));
+        mProgressDialog.setMessage(mParent.getString(R.string.checking_for_updates));
         mProgressDialog.setIndeterminate(true);
         mProgressDialog.setCancelable(true);
         mProgressDialog.setOnCancelListener(new OnCancelListener() {

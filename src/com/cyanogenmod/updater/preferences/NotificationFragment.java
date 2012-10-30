@@ -1,6 +1,7 @@
 
 package com.cyanogenmod.updater.preferences;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.media.Ringtone;
@@ -13,10 +14,12 @@ import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 
 import com.cyanogenmod.updater.R;
+import com.cyanogenmod.updater.interfaces.IActivityMessenger;
 import com.cyanogenmod.updater.misc.Constants;
 
 public class NotificationFragment extends PreferenceFragment implements
         OnSharedPreferenceChangeListener {
+    private IActivityMessenger messenger;
 
     private RingtonePreference mRingtone;
     private CheckBoxPreference mAllowNotifications;
@@ -25,6 +28,18 @@ public class NotificationFragment extends PreferenceFragment implements
 
     public NotificationFragment() {
         // Empty so the header can instantiate it
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        
+        try {
+            messenger = (IActivityMessenger) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                + " must implement iActivityMessenger");
+        }
     }
 
     @Override

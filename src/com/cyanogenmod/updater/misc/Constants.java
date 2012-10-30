@@ -49,6 +49,11 @@ public class Constants {
     public static final String KEY_NOTIFICATION_PREFERENCE = Customization.PACKAGE_FIRST_NAME + ".notification_preference";
     public static final String KEY_NOTIFICATION_FRAGMENT = Customization.PACKAGE_FIRST_NAME + ".notification_fragment";
     public static final String KEY_RINGTONE_PREFERENCE = Customization.PACKAGE_FIRST_NAME + ".ringtone_preference";
+    
+    //IDs
+    public static final int ID_UPDATE_FRAGMENT = 001;
+    public static final int ID_AVAILABLE_UPDATES_FRAGMENT = 002;
+    public static final int ID_NOTIFICATION_FRAGMENT = 003;
 
     // Preferences
     public static final String ENABLE_PREF = "pref_enable_updates";

@@ -11,6 +11,7 @@ package com.cyanogenmod.updater;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.cyanogenmod.updater.customization.Customization;
+import com.cyanogenmod.updater.interfaces.IActivityMessenger;
 import com.cyanogenmod.updater.misc.Constants;
 import com.cyanogenmod.updater.preferences.UpdateFragment;
 import com.cyanogenmod.updater.utils.SysUtils;
@@ -29,7 +31,7 @@ import com.cyanogenmod.updater.utils.SysUtils;
 import java.util.Date;
 import java.util.List;
 
-public class UpdatesSettings extends PreferenceActivity {
+public class UpdatesSettings extends PreferenceActivity implements IActivityMessenger {
     private static final String TAG = "UpdatesSettings";
     private static final boolean DEBUG = false;
 
@@ -40,8 +42,6 @@ public class UpdatesSettings extends PreferenceActivity {
     private String mSystemMod;
     private String mSystemRom;
 
-    private Bundle mSavedInstanceState;
-
     @Override
     public void onBuildHeaders(List<Header> target) {
         loadHeadersFromResource(R.xml.preference_headers, target);
@@ -51,13 +51,11 @@ public class UpdatesSettings extends PreferenceActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mSavedInstanceState = savedInstanceState;
-
         // Set 'HomeAsUp' feature of the actionbar to fit better into Settings
         final ActionBar bar = getActionBar();
         bar.setDisplayHomeAsUpEnabled(true);
 
-        // Turn on the Options Menu and update the layout
+        // Turn on the Options Menu
         invalidateOptionsMenu();
 
     }
@@ -92,7 +90,7 @@ public class UpdatesSettings extends PreferenceActivity {
                 FragmentManager fragmentManager = getFragmentManager();
                 if (fragmentManager != null) {
                     UpdateFragment updateFragment = (UpdateFragment) fragmentManager
-                            .findFragmentByTag(getString(R.string.update_fragment_key));
+                            .findFragmentById(Constants.ID_UPDATE_FRAGMENT);
                     if (updateFragment != null) {
                         updateFragment.confirmDeleteAll();
                         return true;
@@ -125,7 +123,7 @@ public class UpdatesSettings extends PreferenceActivity {
         if (fragmentManager != null) {
             Log.d(TAG, fragmentManager.toString());
             UpdateFragment updateFragment = (UpdateFragment) fragmentManager
-                    .findFragmentByTag(Constants.KEY_UPDATE_FRAGMENT);
+                    .findFragmentById(Constants.ID_UPDATE_FRAGMENT);
             if (updateFragment != null) {
                 updateFragment.onNewIntent(intent);
             } else {
@@ -134,6 +132,16 @@ public class UpdatesSettings extends PreferenceActivity {
         } else {
             Log.e(TAG, "null fragmentManager in onNewIntent");
         }
+
+    }
+
+    public void F2FMessage(Fragment recipient, String message) {
+
+        
+    }
+
+    public void F2AMessage(String message) {
+
 
     }
 

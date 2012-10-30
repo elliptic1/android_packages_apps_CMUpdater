@@ -1,5 +1,6 @@
 package com.cyanogenmod.updater.preferences;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -7,11 +8,27 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
 import com.cyanogenmod.updater.R;
+import com.cyanogenmod.updater.interfaces.IActivityMessenger;
 
-public class AvailableUpdatesFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
+public class AvailableUpdatesFragment extends PreferenceFragment 
+    implements OnSharedPreferenceChangeListener {
+    
+    IActivityMessenger messenger;
 
     public AvailableUpdatesFragment() {
         // Empty so the header can instantiate it
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        
+        try {
+            messenger = (IActivityMessenger) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                + " must implement iActivityMessenger");
+        }
     }
     
     @Override

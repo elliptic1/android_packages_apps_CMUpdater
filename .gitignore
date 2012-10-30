@@ -1,5 +1,6 @@
 lint.xml
 .git
+.gitignore
 .project
 .settings
 src/android

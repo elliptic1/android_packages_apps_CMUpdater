@@ -54,6 +54,13 @@
     <string name="type_all_incl_nightly">All versions (incl. Nightlies)</string>
     <string name="type_new">New versions (Stable only)</string>
     <string name="type_new_incl_nightly">New versions (incl. Nightlies)</string>
+    <string name="notification_fragment_title">Notification Settings</string>
+    <string name="notification_fragment_key">com.cyanogenmod.updater.notification_fragment</string>
+    <string name="notification_pref_title">Allow Notifications</string>
+    <string name="notification_pref_key">com.cyanogenmod.updater.notification_preference</string>
+    <string name="ringtone_pref_title">Choose Ringtone</string>
+    <string name="ringtone_pref_key">com.cyanogenmod.updater.ringtone_preference</string>
+    
 
     <!-- Update checking -->
     <string name="checking_for_updates">Checking for updates</string>
@@ -100,13 +107,5 @@
     <string name="no_changelog_alert">No changelog available</string>
     <string name="failed_to_load_changelog">Unable to load changelog</string>
     <string name="changelog_dialog_title">Changelog</string>
-
-    <!-- Notification Settings strings -->
-    <string name="notification_fragment_title">Notification Settings</string>
-    <string name="notification_fragment_key">com.cyanogenmod.updater.notification_fragment</string>
-    <string name="notification_pref_title">Allow Notifications</string>
-    <string name="notification_pref_key">com.cyanogenmod.updater.notification_preference</string>
-    <string name="ringtone_pref_title">Choose Ringtone</string>
-    <string name="ringtone_pref_key">com.cyanogenmod.updater.ringtone_preference</string>
 
 </resources>

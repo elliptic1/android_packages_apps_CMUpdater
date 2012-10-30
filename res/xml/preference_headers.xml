@@ -15,16 +15,16 @@
     <header
         android:fragment="com.cyanogenmod.updater.preferences.UpdateFragment"
         android:title="@string/update_fragment_title"
-        android:tag="@string/update_fragment_key" />
+        android:id="@+id/update_fragment_id" />
 
     <header
         android:fragment="com.cyanogenmod.updater.preferences.AvailableUpdatesFragment"
         android:title="@string/available_updates_fragment_title"
-        android:tag="@string/available_updates_fragment_key" />
+        android:id="@+id/available_updates_fragment_id" />
     
     <header
         android:fragment="com.cyanogenmod.updater.preferences.NotificationFragment"
         android:title="@string/notification_fragment_title"
-        android:tag="@string/notification_fragment_key" />
+        android:id="@+id/notification_fragment_id" />
 
 </preference-headers>
