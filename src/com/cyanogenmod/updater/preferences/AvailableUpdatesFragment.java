@@ -13,7 +13,7 @@ import com.cyanogenmod.updater.interfaces.IActivityMessenger;
 public class AvailableUpdatesFragment extends PreferenceFragment 
     implements OnSharedPreferenceChangeListener {
     
-    IActivityMessenger messenger;
+    private IActivityMessenger messenger;
 
     public AvailableUpdatesFragment() {
         // Empty so the header can instantiate it

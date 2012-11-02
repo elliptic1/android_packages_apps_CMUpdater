@@ -1,13 +1,9 @@
 package com.cyanogenmod.updater.tasks;
 
 import android.app.AlertDialog;
-import android.app.DownloadManager.Request;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.storage.StorageManager;
@@ -16,12 +12,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.cyanogenmod.updater.R;
-import com.cyanogenmod.updater.UpdatePreference;
 import com.cyanogenmod.updater.customTypes.UpdateInfo;
 import com.cyanogenmod.updater.misc.Constants;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,155 +26,16 @@ import java.text.MessageFormat;
 
 public class FileIO {
     private static final String TAG = "FileIO";
-    private Context mContext;
+    private static Context mContext;
     private boolean mStartUpdateVisible = false;
-
+    private static File mUpdateFolder;
+    
     public FileIO(Context context) {
         mContext = context;
+        mUpdateFolder = new File(Environment.getExternalStorageDirectory() + "/cmupdater");
     }
 
-    public void startDownload(UpdatePreference mDownloadingPreference, Boolean mDownloading) {
-        if (mDownloading) {
-            Toast.makeText(mContext, R.string.download_already_running, Toast.LENGTH_LONG)
-                .show();
-            return;
-        }
-
-        UpdateInfo ui = mDownloadingPreference.getUpdateInfo();
-        if (ui != null) {
-            PackageManager manager = mContext.getPackageManager();
-            mDownloadingPreference.setStyle(UpdatePreference.STYLE_DOWNLOADING);
-
-            // Create the download request and set some basic parameters
-            String fullFolderPath = Environment.getExternalStorageDirectory().getAbsolutePath()
-                    + Constants.UPDATES_FOLDER;
-            // If directory doesn't exist, create it
-            File directory = new File(fullFolderPath);
-            if (!directory.exists()) {
-                directory.mkdirs();
-                Log.d(TAG, "UpdateFolder created");
-            }
-
-            // Save the Changelog content to the sdcard for later use
-            writeLogFile(ui.getFileName(), ui.getChanges());
-
-            // Build the name of the file to download, adding .partial at
-            // the end. It will get
-            // stripped off when the download completes
-            String fullFilePath = "file://" + fullFolderPath + "/" + ui.getFileName()
-                    + ".partial";
-            Request request = new Request(Uri.parse(ui.getDownloadUrl()));
-            request.addRequestHeader("Cache-Control", "no-cache");
-            try {
-                PackageInfo pinfo = manager.getPackageInfo(mContext.getPackageName(), 0);
-                request.addRequestHeader("User-Agent", pinfo.packageName + "/"
-                    + pinfo.versionName);
-            } catch (android.content.pm.PackageManager.NameNotFoundException nnfe) {
-                // Do nothing
-            }
-            request.setTitle(getString(R.string.app_name));
-            request.setDescription(ui.getFileName());
-            request.setDestinationUri(Uri.parse(fullFilePath));
-            request.setAllowedOverRoaming(false);
-            request.setVisibleInDownloadsUi(false);
-
-            // TODO: this could/should be made configurable
-            request.setAllowedOverMetered(true);
-
-            // Start the download
-            mEnqueue = mDownloadManager.enqueue(request);
-            mFileName = ui.getFileName();
-            mDownloading = true;
-
-            // Store in shared preferences
-            mPrefs.edit().putLong(Constants.DOWNLOAD_ID, mEnqueue).apply();
-            mPrefs.edit().putString(Constants.DOWNLOAD_MD5, ui.getMD5()).apply();
-            mUpdateHandler.post(updateProgress);
-        }
-    }
-
-    Runnable updateProgress = new Runnable() {
-        public void run() {
-            if (mDownloadingPreference != null) {
-                if (mDownloadingPreference.getProgressBar() != null && mDownloading) {
-                    DownloadManager mgr = (DownloadManager) getSystemService(
-                            Context.DOWNLOAD_SERVICE);
-                    DownloadManager.Query q = new DownloadManager.Query();
-                    q.setFilterById(mEnqueue);
-                    Cursor cursor = mgr.query(q);
-                    if (!cursor.moveToFirst()) {
-                        return;
-                    }
-                    int bytes_downloaded = cursor.getInt(cursor
-                            .getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
-                    int bytes_total = cursor.getInt(cursor
-                            .getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
-                    cursor.close();
-                    ProgressBar prog = mDownloadingPreference.getProgressBar();
-                    if (bytes_total < 0) {
-                        prog.setIndeterminate(true);
-                    } else {
-                        prog.setIndeterminate(false);
-                        prog.setMax(bytes_total);
-                    }
-                    prog.setProgress(bytes_downloaded);
-                }
-                if (mDownloading) {
-                    mUpdateHandler.postDelayed(this, 1000);
-                }
-            }
-        }
-    };
-
-    public void stopDownload() {
-        if (!mDownloading || mFileName == null) {
-            return;
-        }
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setTitle(R.string.confirm_download_cancelation_dialog_title);
-        builder.setMessage(R.string.confirm_download_cancelation_dialog_message);
-        builder.setPositiveButton(R.string.dialog_yes, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                // Set the preference back to new style
-                UpdatePreference pref = findMatchingPreference(mFileName);
-                if (pref != null) {
-                    pref.setStyle(UpdatePreference.STYLE_NEW);
-                }
-                // We are OK to stop download, trigger it
-                mDownloadManager.remove(mEnqueue);
-                mUpdateHandler.removeCallbacks(updateProgress);
-                mEnqueue = -1;
-                mFileName = null;
-                mDownloading = false;
-
-                // Clear the stored data from sharedpreferences
-                mPrefs.edit().putLong(Constants.DOWNLOAD_ID, mEnqueue).apply();
-                mPrefs.edit().putString(Constants.DOWNLOAD_MD5, "").apply();
-                Toast.makeText(mContext, R.string.download_cancelled,
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-        builder.setNegativeButton(R.string.dialog_no, null);
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    private void downloadCompleted(long downloadId, String fullPathname) {
-        mDownloading = false;
-
-        String[] temp = fullPathname.split("/");
-        String fileName = temp[temp.length - 1];
-
-        // Find the matching preference so we can retrieve the UpdateInfo
-        UpdatePreference pref = findMatchingPreference(fileName);
-        if (pref != null) {
-            UpdateInfo ui = pref.getUpdateInfo();
-            pref.setStyle(UpdatePreference.STYLE_DOWNLOADED);
-            startUpdate(ui);
-        }
-    }
-
-    private static boolean deleteDir(File dir) {
+    public static boolean deleteDir(File dir) {
         if (dir.isDirectory()) {
             String[] children = dir.list();
             for (String aChildren : children) {
@@ -201,11 +59,11 @@ public class FileIO {
 
         // Get the message body right
         String dialogBody = MessageFormat.format(
-                getResources().getString(R.string.apply_update_dialog_text),
+                getContext().getString(R.string.apply_update_dialog_text),
                 updateInfo.getFileName());
 
         // Display the dialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(R.string.apply_update_dialog_title);
         builder.setMessage(dialogBody);
         builder.setPositiveButton(R.string.dialog_update, new DialogInterface.OnClickListener() {
@@ -234,13 +92,13 @@ public class FileIO {
                     os.flush();
 
                     // Trigger the reboot
-                    PowerManager powerManager = (PowerManager) mContext.getSystemService(
+                    PowerManager powerManager = (PowerManager) getContext().getSystemService(
                             Context.POWER_SERVICE);
                     powerManager.reboot("recovery");
 
                 } catch (IOException e) {
                     Log.e(TAG, "Unable to reboot into recovery mode:", e);
-                    Toast.makeText(mContext, R.string.apply_unable_to_reboot_toast,
+                    Toast.makeText(getContext(), R.string.apply_unable_to_reboot_toast,
                             Toast.LENGTH_SHORT).show();
                 }
             }
@@ -256,10 +114,10 @@ public class FileIO {
     }
 
     private String getStorageMountpoint() {
-        StorageManager sm = (StorageManager) mContext.getSystemService(Context.STORAGE_SERVICE);
+        StorageManager sm = (StorageManager) getContext().getSystemService(Context.STORAGE_SERVICE);
         StorageVolume[] volumes = sm.getVolumeList();
         String primaryStoragePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        boolean alternateIsInternal = mContext.getResources().getBoolean(R.bool.alternateIsInternal);
+        boolean alternateIsInternal = getContext().getResources().getBoolean(R.bool.alternateIsInternal);
 
         if (volumes.length <= 1) {
             // single storage, assume only /sdcard exists
@@ -289,22 +147,8 @@ public class FileIO {
         return "/sdcard";
     }
 
-    private UpdatePreference findMatchingPreference(String key) {
-
-        if (mUpdatesList != null) {
-            // Find the matching preference
-            for (int i = 0; i < mUpdatesList.getPreferenceCount(); i++) {
-                UpdatePreference pref = (UpdatePreference) mUpdatesList.getPreference(i);
-                if (pref.getKey().equals(key)) {
-                    return pref;
-                }
-            }
-        }
-        return null;
-    }
-
-    private String mapCheckValue(Integer value) {
-        Resources resources = mContext.getResources();
+    public String mapCheckValue(Integer value) {
+        Resources resources = getContext().getResources();
         String[] checkNames = resources.getStringArray(R.array.update_check_entries);
         String[] checkValues = resources.getStringArray(R.array.update_check_values);
         for (int i = 0; i < checkValues.length; i++) {
@@ -312,10 +156,30 @@ public class FileIO {
                 return checkNames[i];
             }
         }
-        return mContext.getString(R.string.unknown);
+        return getContext().getString(R.string.unknown);
     }
     
-    private void writeLogFile(String filename, String log) {
+    public static String readLogFile(String filename) {
+        StringBuilder text = new StringBuilder();
+
+        File logFile = new File(mUpdateFolder + "/" + filename + ".changelog");
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(logFile));
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                text.append(line);
+                text.append('\n');
+            }
+            br.close();
+        } catch (IOException e) {
+            return getContext().getString(R.string.no_changelog_alert);
+        }
+
+        return text.toString();
+    }
+
+    public static void writeLogFile(String filename, String log) {
         File logFile = new File(mUpdateFolder + "/" + filename + ".changelog");
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(logFile));
@@ -325,4 +189,48 @@ public class FileIO {
             Log.e(TAG, "File write failed: " + e.toString());
         }
     }
+    
+    public boolean deleteUpdate(String filename) {
+        boolean success = false;
+        if (mUpdateFolder.exists() && mUpdateFolder.isDirectory()) {
+            File zipFileToDelete = new File(mUpdateFolder + "/" + filename);
+            File logFileToDelete = new File(mUpdateFolder + "/" + filename + ".changelog");
+            if (zipFileToDelete.exists()) {
+                zipFileToDelete.delete();
+            } else {
+                Log.d(TAG, "Update to delete not found");
+                return false;
+            }
+            if (logFileToDelete.exists()) {
+                logFileToDelete.delete();
+            }
+            zipFileToDelete = null;
+            logFileToDelete = null;
+
+            success = true;
+            Toast.makeText(
+                    getContext(),
+                    MessageFormat
+                            .format(getContext().getResources().getString(
+                                    R.string.delete_single_update_success_message),
+                                    filename), Toast.LENGTH_SHORT).show();
+
+        } else if (!mUpdateFolder.exists()) {
+            Toast.makeText(getContext(), R.string.delete_updates_noFolder_message,
+                    Toast.LENGTH_SHORT)
+                    .show();
+
+        } else {
+            Toast.makeText(getContext(), R.string.delete_updates_failure_message,
+                    Toast.LENGTH_SHORT)
+                    .show();
+        }
+
+        return success;
+    }
+    
+    private static Context getContext() {
+        return mContext;
+    }
+
 }

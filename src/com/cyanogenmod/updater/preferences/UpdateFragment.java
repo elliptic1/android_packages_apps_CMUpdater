@@ -15,15 +15,11 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.PowerManager;
-import android.os.storage.StorageManager;
-import android.os.storage.StorageVolume;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
@@ -41,18 +37,13 @@ import com.cyanogenmod.updater.interfaces.IActivityMessenger;
 import com.cyanogenmod.updater.misc.Constants;
 import com.cyanogenmod.updater.misc.State;
 import com.cyanogenmod.updater.service.UpdateCheckService;
+import com.cyanogenmod.updater.tasks.FileIO;
 import com.cyanogenmod.updater.tasks.UpdateCheckTask;
 import com.cyanogenmod.updater.utils.UpdateFilter;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -60,6 +51,7 @@ import java.util.List;
 
 public class UpdateFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
     private static final String TAG = "UpdateFragment";
+    private static final boolean DEBUG = true;
 
     private ListPreference mUpdateCheck;
     private ListPreference mUpdateType;
@@ -68,10 +60,8 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
     private File mUpdateFolder;
     private ArrayList<UpdateInfo> mServerUpdates;
     private ArrayList<UpdateInfo> mLocalUpdates;
-    private boolean mStartUpdateVisible = false;
 
     private DownloadManager mDownloadManager;
-    private boolean mDownloading = false;
     private long mEnqueue;
     private String mFileName;
 
@@ -83,14 +73,19 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
     private SharedPreferences mPrefs;
     
     private IActivityMessenger messenger;
+    private FileIO fileIO;
 
     public UpdateFragment() {
         // Empty so the header can instantiate it
+        Log.d(TAG, "UpdateFragment is being instantiated");
+
     }
     
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        
+        Log.d(TAG, "onAttach UpdateFragment");
         
         try {
             messenger = (IActivityMessenger) activity;
@@ -99,23 +94,34 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
                 + " must implement iActivityMessenger");
         }
     }
+    
+    @Override
+    public void onStart() {
+        Log.d(TAG, "onStart UpdateFragment");
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        Log.d(TAG, "onCreate UpdateFragment");
 
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        
+        fileIO = new FileIO(getActivity().getBaseContext());
+        
         PreferenceManager.setDefaultValues(getActivity(), R.xml.pref_update, false);
 
         addPreferencesFromResource(R.xml.pref_update);
 
-        mUpdatesList = (PreferenceCategory) findPreference(Constants.KEY_UPDATE_FRAGMENT);
+        mUpdatesList = (PreferenceCategory) findPreference(Constants.KEY_AVAILABLE_UPDATES_PREFERENCE);
 
         mUpdateCheck = (ListPreference) findPreference(Constants.KEY_UPDATE_CHECK_PREFERENCE);
         if (mUpdateCheck != null) {
             int check = mPrefs.getInt(Constants.UPDATE_CHECK_PREF,
                     Integer.valueOf(Constants.UPDATE_FREQ_WEEKLY));
             mUpdateCheck.setValue(String.valueOf(check));
-            mUpdateCheck.setSummary(mapCheckValue(check));
+            mUpdateCheck.setSummary(fileIO.mapCheckValue(check));
         }
 
         mUpdateType = (ListPreference) findPreference(Constants.KEY_UPDATE_INFO);
@@ -183,7 +189,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
 
         if (findPreference(key) == mUpdateCheck) {
             int newValue = mPrefs.getInt(key, Constants.UPDATE_FREQ_AT_BOOT);
-            mUpdateCheck.setSummary(mapCheckValue(newValue));
+            mUpdateCheck.setSummary(fileIO.mapCheckValue(newValue));
             scheduleUpdateService(newValue * 1000);
         } else if (findPreference(key) == mUpdateType) {
             int newValue = Integer.valueOf((String) mPrefs.getString(key,
@@ -198,7 +204,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
         }
     }
 
-    private void checkForUpdates() {
+    public void checkForUpdates() {
         // Refresh the Layout when UpdateCheck finished
         Log.d(TAG, "Check for updates");
         UpdateCheckTask task = new UpdateCheckTask(getActivity());
@@ -224,7 +230,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
                 UpdatePreference pref = findMatchingPreference(ui.getFileName());
                 if (pref != null) {
                     pref.setStyle(UpdatePreference.STYLE_DOWNLOADED);
-                    startUpdate(ui);
+                    fileIO.startUpdate(ui);
                 }
             }
         }
@@ -242,6 +248,120 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
 
     }
     
+    public void startDownload(String key) {
+        if (mPrefs.getBoolean("isDownloading", false)) {
+            Toast.makeText(getActivity(), R.string.download_already_running, Toast.LENGTH_LONG)
+                    .show();
+            return;
+        }
+        UpdatePreference pref = findMatchingPreference(key);
+        if (pref != null) {
+            // We have a match, get ready to trigger the download
+            mDownloadingPreference = pref;
+
+            UpdateInfo ui = mDownloadingPreference.getUpdateInfo();
+            if (ui != null) {
+                PackageManager manager = getActivity().getPackageManager();
+                mDownloadingPreference.setStyle(UpdatePreference.STYLE_DOWNLOADING);
+
+                // Create the download request and set some basic parameters
+                String fullFolderPath = Environment.getExternalStorageDirectory().getAbsolutePath()
+                        + Constants.UPDATES_FOLDER;
+                // If directory doesn't exist, create it
+                File directory = new File(fullFolderPath);
+                if (!directory.exists()) {
+                    directory.mkdirs();
+                    Log.d(TAG, "UpdateFolder created");
+                }
+
+                // Save the Changelog content to the sdcard for later use
+                FileIO.writeLogFile(ui.getFileName(), ui.getChanges());
+
+                // Build the name of the file to download, adding .partial at
+                // the end. It will get
+                // stripped off when the download completes
+                String fullFilePath = "file://" + fullFolderPath + "/" + ui.getFileName()
+                        + ".partial";
+                Request request = new Request(Uri.parse(ui.getDownloadUrl()));
+                request.addRequestHeader("Cache-Control", "no-cache");
+                try {
+                    PackageInfo pinfo = manager.getPackageInfo(getActivity().getPackageName(), 0);
+                    request.addRequestHeader("User-Agent", pinfo.packageName + "/"
+                            + pinfo.versionName);
+                } catch (android.content.pm.PackageManager.NameNotFoundException nnfe) {
+                    // Do nothing
+                }
+                request.setTitle(getActivity().getResources().getString(R.string.app_name));
+                request.setDescription(ui.getFileName());
+                request.setDestinationUri(Uri.parse(fullFilePath));
+                request.setAllowedOverRoaming(false);
+                request.setVisibleInDownloadsUi(false);
+
+                // TODO: this could/should be made configurable
+                request.setAllowedOverMetered(true);
+
+                // Start the download
+                mEnqueue = mDownloadManager.enqueue(request);
+                mFileName = ui.getFileName();
+                mPrefs.edit().putBoolean("isDownloading", true).apply();
+
+                // Store in shared preferences
+                mPrefs.edit().putLong(Constants.DOWNLOAD_ID, mEnqueue).apply();
+                mPrefs.edit().putString(Constants.DOWNLOAD_MD5, ui.getMD5()).apply();
+                mUpdateHandler.post(updateProgress);
+            }
+        }
+    }
+
+    public void stopDownload() {
+        if (!mPrefs.getBoolean("isDownloading", false) || mFileName == null) {
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.confirm_download_cancelation_dialog_title);
+        builder.setMessage(R.string.confirm_download_cancelation_dialog_message);
+        builder.setPositiveButton(R.string.dialog_yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Set the preference back to new style
+                UpdatePreference pref = findMatchingPreference(mFileName);
+                if (pref != null) {
+                    pref.setStyle(UpdatePreference.STYLE_NEW);
+                }
+                // We are OK to stop download, trigger it
+                mDownloadManager.remove(mEnqueue);
+                mUpdateHandler.removeCallbacks(updateProgress);
+                mEnqueue = -1;
+                mFileName = null;
+                mPrefs.edit().putBoolean("isDownloading", false).apply();
+
+                // Clear the stored data from sharedpreferences
+                mPrefs.edit().putLong(Constants.DOWNLOAD_ID, mEnqueue).apply();
+                mPrefs.edit().putString(Constants.DOWNLOAD_MD5, "").apply();
+                Toast.makeText(getActivity(), R.string.download_cancelled,
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_no, null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    
+    private void downloadCompleted(long downloadId, String fullPathname) {
+        mPrefs.edit().putBoolean("isDownloading", false).apply();
+
+        String[] temp = fullPathname.split("/");
+        String fileName = temp[temp.length - 1];
+
+        // Find the matching preference so we can retrieve the UpdateInfo
+        UpdatePreference pref = findMatchingPreference(fileName);
+        if (pref != null) {
+            UpdateInfo ui = pref.getUpdateInfo();
+            pref.setStyle(UpdatePreference.STYLE_DOWNLOADED);
+            fileIO.startUpdate(ui);
+        }
+    }
+    
     // *********************************************************
     // Supporting methods
     // *********************************************************
@@ -249,7 +369,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
     Runnable updateProgress = new Runnable() {
         public void run() {
             if (mDownloadingPreference != null) {
-                if (mDownloadingPreference.getProgressBar() != null && mDownloading) {
+                if (mDownloadingPreference.getProgressBar() != null && mPrefs.getBoolean("isDownloading", false)) {
                     DownloadManager mgr = (DownloadManager) getActivity().getSystemService(
                             Context.DOWNLOAD_SERVICE);
                     DownloadManager.Query q = new DownloadManager.Query();
@@ -272,7 +392,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
                     }
                     prog.setProgress(bytes_downloaded);
                 }
-                if (mDownloading) {
+                if (mPrefs.getBoolean("isDownloading", false)) {
                     mUpdateHandler.postDelayed(this, 1000);
                 }
             }
@@ -292,7 +412,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
         }
         return null;
     }
-
+    
     public void updateLayout() {
         Log.d(TAG, "in updateLayout");
         FullUpdateInfo availableUpdates = null;
@@ -378,36 +498,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
         refreshPreferences();
     }
 
-    private String readLogFile(String filename) {
-        StringBuilder text = new StringBuilder();
 
-        File logFile = new File(mUpdateFolder + "/" + filename + ".changelog");
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(logFile));
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                text.append(line);
-                text.append('\n');
-            }
-            br.close();
-        } catch (IOException e) {
-            return getString(R.string.no_changelog_alert);
-        }
-
-        return text.toString();
-    }
-
-    private void writeLogFile(String filename, String log) {
-        File logFile = new File(mUpdateFolder + "/" + filename + ".changelog");
-        try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(logFile));
-            bw.write(log);
-            bw.close();
-        } catch (IOException e) {
-            Log.e(TAG, "File write failed: " + e.toString());
-        }
-    }
 
     private void refreshPreferences() {
         if (mUpdatesList != null) {
@@ -448,7 +539,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
                         mDownloadingPreference = up;
                         mUpdateHandler.post(updateProgress);
                         foundMatch = false;
-                        mDownloading = true;
+                        mPrefs.edit().putBoolean("isDownloading", true).apply();
                     }
 
                     // Add to the list
@@ -463,7 +554,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
                 for (UpdateInfo ui : mLocalUpdates) {
 
                     // Retrieve the changelog
-                    ui.setChanges(readLogFile(ui.getFileName()));
+                    ui.setChanges(FileIO.readLogFile(ui.getFileName()));
 
                     // Create a more user friendly title by stripping of the
                     // '-device.zip' at the end
@@ -489,46 +580,6 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
         }
     }
 
-    public boolean deleteUpdate(String filename) {
-        boolean success = false;
-        if (mUpdateFolder.exists() && mUpdateFolder.isDirectory()) {
-            File zipFileToDelete = new File(mUpdateFolder + "/" + filename);
-            File logFileToDelete = new File(mUpdateFolder + "/" + filename + ".changelog");
-            if (zipFileToDelete.exists()) {
-                zipFileToDelete.delete();
-            } else {
-                Log.d(TAG, "Update to delete not found");
-                return false;
-            }
-            if (logFileToDelete.exists()) {
-                logFileToDelete.delete();
-            }
-            zipFileToDelete = null;
-            logFileToDelete = null;
-
-            success = true;
-            Toast.makeText(
-                    getActivity(),
-                    MessageFormat
-                            .format(getResources().getString(
-                                    R.string.delete_single_update_success_message),
-                                    filename), Toast.LENGTH_SHORT).show();
-
-        } else if (!mUpdateFolder.exists()) {
-            Toast.makeText(getActivity(), R.string.delete_updates_noFolder_message,
-                    Toast.LENGTH_SHORT)
-                    .show();
-
-        } else {
-            Toast.makeText(getActivity(), R.string.delete_updates_failure_message,
-                    Toast.LENGTH_SHORT)
-                    .show();
-        }
-
-        // Update the list
-        updateLayout();
-        return success;
-    }
 
     private void scheduleUpdateService(int updateFrequency) {
         // Get the intent ready
@@ -568,7 +619,11 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
         boolean success;
         // mUpdateFolder: Foldername with fullpath of SDCARD
         if (mUpdateFolder.exists() && mUpdateFolder.isDirectory()) {
-            deleteDir(mUpdateFolder);
+            if (DEBUG == true) {
+                Log.d(TAG, "would delete old updates now");
+            } else {
+                FileIO.deleteDir(mUpdateFolder);
+            }
             mUpdateFolder.mkdir();
             success = true;
             Toast.makeText(getActivity(), R.string.delete_updates_success_message,

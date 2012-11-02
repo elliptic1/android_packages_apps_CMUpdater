@@ -42,10 +42,7 @@ public class UpdatesSettings extends PreferenceActivity implements IActivityMess
     private String mSystemMod;
     private String mSystemRom;
 
-    @Override
-    public void onBuildHeaders(List<Header> target) {
-        loadHeadersFromResource(R.xml.preference_headers, target);
-    }
+    private UpdateFragment mUpdateFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,6 +55,12 @@ public class UpdatesSettings extends PreferenceActivity implements IActivityMess
         // Turn on the Options Menu
         invalidateOptionsMenu();
 
+        Log.d("TAG", "end of on create");
+    }
+
+    @Override
+    public void onBuildHeaders(List<Header> target) {
+        loadHeadersFromResource(R.layout.preference_headers, target);
     }
 
     @Override
@@ -82,24 +85,21 @@ public class UpdatesSettings extends PreferenceActivity implements IActivityMess
 
         switch (item.getItemId()) {
             case MENU_REFRESH:
-                PreferenceManager.getDefaultSharedPreferences(this)
-                        .edit().putBoolean(Constants.CHECK_FOR_UPDATE, true);
+                // send update notice to updateFragment
+                if (mUpdateFragment != null) {
+                    mUpdateFragment.checkForUpdates();
+                } else {
+                    Log.e(TAG, "update Fragment was null in menu refresh");
+                }
                 return true;
 
             case MENU_DELETE_ALL:
-                FragmentManager fragmentManager = getFragmentManager();
-                if (fragmentManager != null) {
-                    UpdateFragment updateFragment = (UpdateFragment) fragmentManager
-                            .findFragmentById(Constants.ID_UPDATE_FRAGMENT);
-                    if (updateFragment != null) {
-                        updateFragment.confirmDeleteAll();
-                        return true;
-                    } else {
-                        Log.e(TAG, "update Fragment was null in delete all");
-                    }
+                if (mUpdateFragment != null) {
+                    mUpdateFragment.confirmDeleteAll();
                 } else {
-                    Log.e(TAG, "fragment Manager was null in delete all");
+                    Log.e(TAG, "update Fragment was null in delete all");
                 }
+                return true;
 
             case MENU_SYSTEM_INFO:
                 showSysInfo();
@@ -113,35 +113,38 @@ public class UpdatesSettings extends PreferenceActivity implements IActivityMess
         return false;
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-
-        Log.e(TAG, "inside onNewIntent, the intent follows");
-        
-        FragmentManager fragmentManager = getFragmentManager();
-        if (fragmentManager != null) {
-            Log.d(TAG, fragmentManager.toString());
-            UpdateFragment updateFragment = (UpdateFragment) fragmentManager
-                    .findFragmentById(Constants.ID_UPDATE_FRAGMENT);
-            if (updateFragment != null) {
-                updateFragment.onNewIntent(intent);
-            } else {
-                Log.e(TAG, "null updateFragment in onNewIntent");
-            }
-        } else {
-            Log.e(TAG, "null fragmentManager in onNewIntent");
-        }
-
-    }
+//    @Override
+//    protected void onNewIntent(Intent intent) {
+//        super.onNewIntent(intent);
+//
+//        Log.e(TAG, "inside onNewIntent, the intent follows");
+//
+//        // Log.d(TAG, "bundle key set: " +
+//        // intent.getExtras().keySet().toString());
+//
+//        Log.d(TAG, "show_fragment: " + intent.getExtras().getString(":android:show_fragment"));
+//
+//        FragmentManager fragmentManager = getFragmentManager();
+//        if (fragmentManager != null) {
+//            Log.d(TAG, fragmentManager.toString());
+//            // UpdateFragment updateFragment = (UpdateFragment) fragmentManager
+//            // .findFragmentById(R.id.update_fragment_id);
+//            // if (updateFragment != null) {
+//            // updateFragment.onNewIntent(intent);
+//            // } else {
+//            // Log.e(TAG, "null updateFragment in onNewIntent");
+//            // }
+//        } else {
+//            Log.e(TAG, "null fragmentManager in onNewIntent");
+//        }
+//
+//    }
 
     public void F2FMessage(Fragment recipient, String message) {
 
-        
     }
 
     public void F2AMessage(String message) {
-
 
     }
 

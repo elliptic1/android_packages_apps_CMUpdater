@@ -10,9 +10,14 @@
 package com.cyanogenmod.updater;
 
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.os.Handler;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,6 +30,7 @@ import android.widget.Toast;
 
 import com.cyanogenmod.updater.customTypes.UpdateInfo;
 import com.cyanogenmod.updater.preferences.UpdateFragment;
+import com.cyanogenmod.updater.tasks.FileIO;
 
 public class UpdatePreference extends Preference implements OnClickListener, OnLongClickListener {
     private static final String TAG = "UpdatePreference";
@@ -45,6 +51,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
     private ProgressBar mProgressBar;
     private UpdateInfo mUpdateInfo = null;
     private Context mContext;
+    private FileIO mFileIO;
 
     public UpdatePreference(UpdateFragment parent, UpdateInfo ui, String title, int style) {
         super(parent.getActivity().getBaseContext(), null, R.style.UpdatesPreferenceStyle);
@@ -54,6 +61,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
         mStyle = style;
         mUpdateInfo = ui;
         mContext = mParent.getActivity().getBaseContext();
+        mFileIO = new FileIO(mContext);
     }
 
     @Override
@@ -65,10 +73,10 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
         mUpdatesPref.setOnClickListener(this);
         mUpdatesPref.setOnLongClickListener(this);
 
-        mUpdatesButton = (ImageView)view.findViewById(R.id.updates_button);
-        mTitleText = (TextView)view.findViewById(android.R.id.title);
-        mSummaryText = (TextView)view.findViewById(android.R.id.summary);
-        mProgressBar = (ProgressBar)view.findViewById(R.id.download_progress_bar);
+        mUpdatesButton = (ImageView) view.findViewById(R.id.updates_button);
+        mTitleText = (TextView) view.findViewById(android.R.id.title);
+        mSummaryText = (TextView) view.findViewById(android.R.id.summary);
+        mProgressBar = (ProgressBar) view.findViewById(R.id.download_progress_bar);
 
         // Update the views
         updatePreferenceViews();
@@ -93,9 +101,11 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
 
     @Override
     public void onClick(View v) {
-        String changeLog = ( TextUtils.isEmpty(mUpdateInfo.getChanges()) ? mParent.getResources().getString(R.string.no_changelog_alert) : mUpdateInfo.getChanges() );
+        String changeLog = (TextUtils.isEmpty(mUpdateInfo.getChanges()) ? mParent.getResources()
+                .getString(R.string.no_changelog_alert) : mUpdateInfo.getChanges());
         if (changeLog.equals(mParent.getResources().getString(R.string.no_changelog_alert))
-                || changeLog.equals(mParent.getResources().getString(R.string.failed_to_load_changelog))) {
+                || changeLog.equals(mParent.getResources().getString(
+                        R.string.failed_to_load_changelog))) {
             // No changelog to show, display a toast
             Toast.makeText(mContext, changeLog, Toast.LENGTH_SHORT).show();
         } else {
@@ -122,7 +132,8 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
         builder.setPositiveButton(R.string.dialog_yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // We are OK to delete, trigger it
-                mParent.deleteUpdate(getKey());
+                mFileIO.deleteUpdate(getKey());
+                // updateLayout();
             }
         });
         builder.setNegativeButton(R.string.dialog_no, null);
@@ -212,7 +223,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
                 mUpdatesButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View arg0) {
-                        mParent.startUpdate(mUpdateInfo);
+                        mFileIO.startUpdate(mUpdateInfo);
                     }
                 });
                 mSummaryText.setText(R.string.downloaded_update_summary);

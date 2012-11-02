@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2012 The CyanogenMod Project
+<!--
+     Copyright (C) 2012 The CyanogenMod Project
 
      Licensed under the GNU GPLv2 license
 
@@ -7,19 +8,18 @@
      or at https://www.gnu.org/licenses/gpl-2.0.txt
 -->
 
-<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
+    android:title="@string/app_name" >
 
     <header
         android:fragment="com.cyanogenmod.updater.preferences.UpdateFragment"
         android:title="@string/update_fragment_title" />
-
     <header
         android:fragment="com.cyanogenmod.updater.preferences.AvailableUpdatesFragment"
         android:title="@string/available_updates_fragment_title" />
-    
     <header
         android:fragment="com.cyanogenmod.updater.preferences.NotificationFragment"
         android:title="@string/notification_fragment_title" />
-    
-    
+
 </preference-headers>
