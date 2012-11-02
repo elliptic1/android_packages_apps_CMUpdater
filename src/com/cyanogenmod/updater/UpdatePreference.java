@@ -10,14 +10,9 @@
 package com.cyanogenmod.updater;
 
 import android.app.AlertDialog;
-import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.os.Handler;
 import android.preference.Preference;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -33,7 +28,7 @@ import com.cyanogenmod.updater.preferences.UpdateFragment;
 import com.cyanogenmod.updater.tasks.FileIO;
 
 public class UpdatePreference extends Preference implements OnClickListener, OnLongClickListener {
-    private static final String TAG = "UpdatePreference";
+//    private static final String TAG = "UpdatePreference";
 
     private static final float DISABLED_ALPHA = 0.4f;
     public static final int STYLE_NEW = 1;

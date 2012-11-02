@@ -6,8 +6,10 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.cyanogenmod.updater.R;
+import com.cyanogenmod.updater.R.xml;
 import com.cyanogenmod.updater.interfaces.IActivityMessenger;
 
 public class AvailableUpdatesFragment extends PreferenceFragment 
@@ -22,7 +24,7 @@ public class AvailableUpdatesFragment extends PreferenceFragment
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        
+        Log.d("TAG", "attaching au fragment");
         try {
             messenger = (IActivityMessenger) activity;
         } catch (ClassCastException e) {
@@ -32,9 +34,9 @@ public class AvailableUpdatesFragment extends PreferenceFragment
     }
     
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.d("TAG", "created au fragment");
         PreferenceManager.setDefaultValues(getActivity(), R.xml.available_updates, false);
             
         addPreferencesFromResource(R.xml.available_updates);

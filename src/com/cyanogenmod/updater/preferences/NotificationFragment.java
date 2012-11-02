@@ -1,4 +1,3 @@
-
 package com.cyanogenmod.updater.preferences;
 
 import android.app.Activity;
@@ -12,6 +11,7 @@ import android.preference.CheckBoxPreference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.util.Log;
 
 import com.cyanogenmod.updater.R;
 import com.cyanogenmod.updater.interfaces.IActivityMessenger;
@@ -33,7 +33,7 @@ public class NotificationFragment extends PreferenceFragment implements
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        
+        Log.d("TAG", "attaching notification fragment");
         try {
             messenger = (IActivityMessenger) activity;
         } catch (ClassCastException e) {
@@ -43,9 +43,9 @@ public class NotificationFragment extends PreferenceFragment implements
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Log.d("TAG", "created notification fragment");
         PreferenceManager.setDefaultValues(getActivity(), R.xml.pref_notification, false);
 
         addPreferencesFromResource(R.xml.pref_notification);

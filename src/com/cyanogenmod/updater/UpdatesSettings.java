@@ -12,8 +12,6 @@ package com.cyanogenmod.updater;
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.FragmentManager;
-import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -25,6 +23,7 @@ import android.widget.TextView;
 import com.cyanogenmod.updater.customization.Customization;
 import com.cyanogenmod.updater.interfaces.IActivityMessenger;
 import com.cyanogenmod.updater.misc.Constants;
+import com.cyanogenmod.updater.preferences.NotificationFragment;
 import com.cyanogenmod.updater.preferences.UpdateFragment;
 import com.cyanogenmod.updater.utils.SysUtils;
 
@@ -42,12 +41,15 @@ public class UpdatesSettings extends PreferenceActivity implements IActivityMess
     private String mSystemMod;
     private String mSystemRom;
 
+    // Without declaring these, there is a ClassNotFoundException during runtime
     private UpdateFragment mUpdateFragment;
+    private NotificationFragment mNotificationFragment;
+//    private AvailableUpdatesFragment AvailableUpdatesFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Log.d("TAG", "start of updatessettings oncreate");
         // Set 'HomeAsUp' feature of the actionbar to fit better into Settings
         final ActionBar bar = getActionBar();
         bar.setDisplayHomeAsUpEnabled(true);
@@ -55,12 +57,17 @@ public class UpdatesSettings extends PreferenceActivity implements IActivityMess
         // Turn on the Options Menu
         invalidateOptionsMenu();
 
-        Log.d("TAG", "end of on create");
+        Log.d("TAG", "end of updatessettings oncreate");
     }
 
     @Override
     public void onBuildHeaders(List<Header> target) {
+        Log.d("TAG", "start of updatessettings onbuildheaders");
         loadHeadersFromResource(R.layout.preference_headers, target);
+        Log.d("TAG", "target 0 is " + target.get(0).fragment);
+        Log.d("TAG", "target 1 is " + target.get(1).fragment);
+        Log.d("TAG", "target 2 is " + target.get(2).fragment);
+        Log.d("TAG", "end of updatessettings onbuildheaders");
     }
 
     @Override
@@ -112,33 +119,6 @@ public class UpdatesSettings extends PreferenceActivity implements IActivityMess
 
         return false;
     }
-
-//    @Override
-//    protected void onNewIntent(Intent intent) {
-//        super.onNewIntent(intent);
-//
-//        Log.e(TAG, "inside onNewIntent, the intent follows");
-//
-//        // Log.d(TAG, "bundle key set: " +
-//        // intent.getExtras().keySet().toString());
-//
-//        Log.d(TAG, "show_fragment: " + intent.getExtras().getString(":android:show_fragment"));
-//
-//        FragmentManager fragmentManager = getFragmentManager();
-//        if (fragmentManager != null) {
-//            Log.d(TAG, fragmentManager.toString());
-//            // UpdateFragment updateFragment = (UpdateFragment) fragmentManager
-//            // .findFragmentById(R.id.update_fragment_id);
-//            // if (updateFragment != null) {
-//            // updateFragment.onNewIntent(intent);
-//            // } else {
-//            // Log.e(TAG, "null updateFragment in onNewIntent");
-//            // }
-//        } else {
-//            Log.e(TAG, "null fragmentManager in onNewIntent");
-//        }
-//
-//    }
 
     public void F2FMessage(Fragment recipient, String message) {
 

@@ -1,4 +1,3 @@
-
 package com.cyanogenmod.updater.preferences;
 
 import android.app.Activity;
@@ -77,7 +76,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
 
     public UpdateFragment() {
         // Empty so the header can instantiate it
-        Log.d(TAG, "UpdateFragment is being instantiated");
+        Log.d(TAG, "calling empty UpdateFragment");
 
     }
     
@@ -101,10 +100,10 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         
-        Log.d(TAG, "onCreate UpdateFragment");
+        Log.d(TAG, "onCreated UpdateFragment");
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         
