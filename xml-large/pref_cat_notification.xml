@@ -8,12 +8,15 @@
      or at https://www.gnu.org/licenses/gpl-2.0.txt
 -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="@string/notification_pref_key"
-        android:title="@string/notification_pref_title" />
+        android:title="@string/notification_pref_title"
+        android:summaryOn="Notifications on"
+        android:summaryOff="Notifications off"
+        />
 
     <RingtonePreference
         android:defaultValue="@string/empty"
@@ -22,7 +25,8 @@
         android:shouldDisableView="true"
         android:showDefault="true"
         android:showSilent="true"
-        android:title="@string/ringtone_pref_title" >
+        android:title="@string/ringtone_pref_title"
+        android:dependency="@string/notification_pref_key" >
     </RingtonePreference>
 
 </PreferenceScreen>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2012 The CyanogenMod Project
+
+     Licensed under the GNU GPLv2 license
+
+     The text of the license can be found in the LICENSE file
+     or at https://www.gnu.org/licenses/gpl-2.0.txt
+-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:title="@string/app_name" >
+
+    <fragment
+        android:key="@string/update_fragment_key"
+        class="com.cyanogenmod.updater.preferences.UpdateFragment"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:title="@string/update_fragment_title" />
+
+    <fragment
+        android:key="@string/available_updates_fragment_key"
+        class="com.cyanogenmod.updater.preferences.AvailableUpdatesFragment"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:title="@string/available_updates_fragment_title" />
+
+    <fragment
+        android:key="@string/notification_fragment_key"
+        class="com.cyanogenmod.updater.preferences.NotificationFragment"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:title="@string/notification_fragment_title" />
+
+</LinearLayout>

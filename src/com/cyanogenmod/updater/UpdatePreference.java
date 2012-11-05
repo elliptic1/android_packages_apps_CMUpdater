@@ -24,7 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cyanogenmod.updater.customTypes.UpdateInfo;
-import com.cyanogenmod.updater.preferences.UpdateFragment;
+import com.cyanogenmod.updater.preferences.AvailableUpdatesFragment;
 import com.cyanogenmod.updater.tasks.FileIO;
 
 public class UpdatePreference extends Preference implements OnClickListener, OnLongClickListener {
@@ -36,7 +36,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
     public static final int STYLE_DOWNLOADED = 3;
     public static final int STYLE_INSTALLED = 4;
 
-    private final UpdateFragment mParent;
+    private final AvailableUpdatesFragment mParent;
     private ImageView mUpdatesButton;
     private TextView mTitleText;
     private TextView mSummaryText;
@@ -48,10 +48,10 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
     private Context mContext;
     private FileIO mFileIO;
 
-    public UpdatePreference(UpdateFragment parent, UpdateInfo ui, String title, int style) {
-        super(parent.getActivity().getBaseContext(), null, R.style.UpdatesPreferenceStyle);
+    public UpdatePreference(AvailableUpdatesFragment availableUpdatesFragment, UpdateInfo ui, String title, int style) {
+        super(availableUpdatesFragment.getActivity().getBaseContext(), null, R.style.UpdatesPreferenceStyle);
         setLayoutResource(R.layout.preference_updates);
-        mParent = parent;
+        mParent = availableUpdatesFragment;
         mTitle = title;
         mStyle = style;
         mUpdateInfo = ui;
@@ -175,7 +175,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
         return mUpdateInfo;
     }
 
-    public UpdateFragment getParent() {
+    public AvailableUpdatesFragment getParent() {
         return mParent;
     }
 

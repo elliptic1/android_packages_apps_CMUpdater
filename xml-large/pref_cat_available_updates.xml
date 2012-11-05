@@ -11,8 +11,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <PreferenceCategory
-        android:key="@string/available_updates_category_key"
-        android:title="@string/available_updates_category_title">
+        android:key="@string/available_updates_fragment_key"
+        android:title="@string/available_updates_fragment_title">
+        
+        
+        
     </PreferenceCategory>
 
 </PreferenceScreen>

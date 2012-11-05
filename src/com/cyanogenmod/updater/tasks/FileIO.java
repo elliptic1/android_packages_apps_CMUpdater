@@ -153,6 +153,7 @@ public class FileIO {
         String[] checkValues = resources.getStringArray(R.array.update_check_values);
         for (int i = 0; i < checkValues.length; i++) {
             if (Integer.decode(checkValues[i]).equals(value)) {
+                Log.d(TAG, "returning " + checkNames[i]);
                 return checkNames[i];
             }
         }
@@ -198,7 +199,7 @@ public class FileIO {
             if (zipFileToDelete.exists()) {
                 zipFileToDelete.delete();
             } else {
-                Log.d(TAG, "Update to delete not found");
+                Log.e(TAG, "Update to delete not found: " + zipFileToDelete.getAbsolutePath());
                 return false;
             }
             if (logFileToDelete.exists()) {

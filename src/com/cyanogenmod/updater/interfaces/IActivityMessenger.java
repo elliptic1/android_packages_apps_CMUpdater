@@ -9,12 +9,10 @@
 
 package com.cyanogenmod.updater.interfaces;
 
-import android.app.Fragment;
+import com.cyanogenmod.updater.preferences.FragmentMessage;
 
 public interface IActivityMessenger {
 
-    public abstract void F2FMessage(Fragment recipient, String message);
-
-    public abstract void F2AMessage(String message);
+    public abstract void sendMessage(FragmentMessage message);
 
 }
