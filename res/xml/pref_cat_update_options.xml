@@ -10,7 +10,7 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="@string/update_fragment_title" >
+    <PreferenceCategory android:title="@string/update_check_title" >
         <ListPreference
             android:defaultValue="@string/check_on_boot"
             android:dialogTitle="@string/update_check_title"

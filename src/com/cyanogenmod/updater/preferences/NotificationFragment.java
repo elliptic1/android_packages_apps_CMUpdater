@@ -62,9 +62,9 @@ public class NotificationFragment extends PreferenceFragment implements
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mNotificationsCheckBox = (CheckBoxPreference) findPreference(Constants.KEY_NOTIFICATIONS_PREFERENCE);
-        mRingtone = (RingtonePreference) findPreference(Constants.KEY_RINGTONE_PREFERENCE);
- 
+        mNotificationsCheckBox = (CheckBoxPreference) findPreference(getString(R.string.notifications_checkbox_key));
+        mRingtone = (RingtonePreference) findPreference(getString(R.string.ringtone_pref_key));
+
         mRingtone.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 
             @Override
@@ -79,7 +79,7 @@ public class NotificationFragment extends PreferenceFragment implements
                 if (ringtone != null) {
                     preference.setSummary(ringtone.getTitle(getActivity().getBaseContext()));
                 } else {
-                    preference.setSummary("Silent");
+                    preference.setSummary(getString(R.string.ringtone_silent));
                 }
 
             }
@@ -95,7 +95,7 @@ public class NotificationFragment extends PreferenceFragment implements
         }
         mPrefs.registerOnSharedPreferenceChangeListener(this);
         mRingtone.setSummary(createRingtonePreferenceSummary());
-        // updatePreferenceHeader();
+        updatePreferenceHeader();
     }
 
     private void updatePreferenceHeader() {
@@ -116,13 +116,17 @@ public class NotificationFragment extends PreferenceFragment implements
     @Override
     public void onSharedPreferenceChanged(SharedPreferences mPrefs, String key) {
 
+        Log.d(TAG, "onSharedPreferenceChanged, the key is " + key);
+
         Preference changedPreference = findPreference(key);
-        if (changedPreference == mRingtone) {
+        
+        if (changedPreference == null ) {
+            Log.e(TAG, "the changedPref is null");    
+        } else if (changedPreference == mRingtone) {
             Log.d(TAG, "rt changed");
             mRingtone.setSummary(createRingtonePreferenceSummary());
-        } else if (changedPreference == findPreference(getString(R.string.notification_pref_key))) {
-            Log.d(TAG, "np changed to " + ((CheckBoxPreference) changedPreference).isChecked());
-
+        } else if (changedPreference == findPreference(getString(R.string.notifications_checkbox_key))) {
+            Log.d(TAG, "np check box changed to " + ((CheckBoxPreference) changedPreference).isChecked());
         }
 
         updatePreferenceHeader();
@@ -132,15 +136,14 @@ public class NotificationFragment extends PreferenceFragment implements
     private String createRingtonePreferenceSummary() {
         String newSummary = "No preferences set";
         if (mRingtone != null) {
-            Uri ringtoneUri = Uri.parse((String) mPrefs.getString(
-                    Constants.KEY_RINGTONE_PREFERENCE, ""));
+            Uri ringtoneUri = Uri.parse((String) mPrefs.getString("notifications_ringtone", ""));
             Ringtone ringtone = RingtoneManager.getRingtone(getActivity().getBaseContext(),
                     ringtoneUri);
             if (ringtone != null) {
                 if (ringtone.getTitle(getActivity().getBaseContext())
                         .equals("Unknown ringtone")) {
-                    mRingtone.setSummary("Silent");
-                    newSummary = "Silent";
+                    mRingtone.setSummary(getString(R.string.ringtone_silent));
+                    newSummary = getString(R.string.ringtone_silent);
                 } else {
                     mRingtone.setSummary(ringtone.getTitle(getActivity().getBaseContext()));
                     newSummary = ringtone.getTitle(getActivity().getBaseContext());

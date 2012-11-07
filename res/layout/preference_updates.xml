@@ -82,7 +82,7 @@
         android:layout_gravity="center"
         android:background="?android:attr/selectableItemBackground"
         android:clickable="true"
-        android:contentDescription="@string/update_type_content_description"
+        android:contentDescription="@string/updates_button_content_description"
         android:focusable="true"
         android:paddingLeft="15dip"
         android:paddingRight="?android:attr/scrollbarSize"

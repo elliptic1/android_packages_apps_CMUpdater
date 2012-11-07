@@ -32,7 +32,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         // Load the required settings from preferences
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int updateFrequency = prefs.getInt(Constants.PREF_UPDATE_CHECK, Constants.UPDATE_FREQ_WEEKLY);
+        int updateFrequency = prefs.getInt(Constants.UPDATE_CHECK_PREF, Constants.UPDATE_FREQ_WEEKLY);
 
         // Check if we are set to manual updates and don't do anything
         if (updateFrequency == Constants.UPDATE_FREQ_NONE) {
@@ -75,7 +75,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private void scheduleUpdateService(Context context, int updateFrequency) {
         // Load the required settings from preferences
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        Date lastCheck = new Date(prefs.getLong(Constants.PREF_LAST_UPDATE_CHECK, 0));
+        Date lastCheck = new Date(prefs.getLong(Constants.LAST_UPDATE_CHECK_PREF, 0));
 
         // Get the intent ready
         Intent i = new Intent(context, UpdateCheckService.class);

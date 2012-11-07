@@ -17,7 +17,7 @@ public class Constants {
     public static final String DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z"; 
 
     // Download related
-    public static final String UPDATES_FOLDER = "/cmupdater";
+    public static final String UPDATES_FOLDER = "cmupdater";
     public static final String DOWNLOAD_ID = "download_id";
     public static final String DOWNLOAD_FULLPATH = "download_fullpath";
     public static final String DOWNLOAD_MD5 = "download_md5";
@@ -41,16 +41,13 @@ public class Constants {
     // Keys
     public static final String KEY_UPDATE_INFO = Customization.PACKAGE_FIRST_NAME + ".fullUpdateList";
     public static final String KEY_AVAILABLE_UPDATES = Customization.PACKAGE_FIRST_NAME + ".available_updates";
-    public static final String KEY_AVAILABLE_UPDATES_PREFERENCE_CATEGORY = Customization.PACKAGE_FIRST_NAME + ".available_updates_preference_category";
-    public static final String KEY_UPDATE_CHECK_PREFERENCE = Customization.PACKAGE_FIRST_NAME + ".update_check_preference";
-    public static final String KEY_RINGTONE_PREFERENCE = Customization.PACKAGE_FIRST_NAME + ".ringtone_preference";
-    public static final String KEY_NOTIFICATIONS_PREFERENCE = Customization.PACKAGE_FIRST_NAME + ".notification_preference";
     
     // Preferences
-    public static final String PREF_BACKUP_ROM = "pref_backup_rom";
-    public static final String PREF_UPDATE_CHECK = "pref_update_check";
-    public static final String PREF_UPDATE_TYPE = "pref_update_type";
-    public static final String PREF_LAST_UPDATE_CHECK = "pref_last_update_check";
+    public static final String ENABLE_PREF = "pref_enable_updates";
+    public static final String BACKUP_PREF = "pref_backup_rom";
+    public static final String UPDATE_CHECK_PREF = "pref_update_check";
+    public static final String UPDATE_TYPE_PREF = "pref_update_type";
+    public static final String LAST_UPDATE_CHECK_PREF = "pref_last_update_check";
 
     // Activity start parameters
     public static final String CHECK_FOR_UPDATE = "check_for_update";

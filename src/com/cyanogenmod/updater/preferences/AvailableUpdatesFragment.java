@@ -29,11 +29,13 @@ import com.cyanogenmod.updater.R;
 import com.cyanogenmod.updater.UpdatePreference;
 import com.cyanogenmod.updater.customTypes.FullUpdateInfo;
 import com.cyanogenmod.updater.customTypes.UpdateInfo;
+import com.cyanogenmod.updater.customization.Customization;
 import com.cyanogenmod.updater.interfaces.IActivityMessenger;
 import com.cyanogenmod.updater.misc.Constants;
 import com.cyanogenmod.updater.misc.State;
 import com.cyanogenmod.updater.tasks.FileIO;
 import com.cyanogenmod.updater.tasks.UpdateCheckTask;
+import com.cyanogenmod.updater.utils.SysUtils;
 import com.cyanogenmod.updater.utils.UpdateFilter;
 
 import java.io.File;
@@ -85,12 +87,19 @@ public class AvailableUpdatesFragment extends PreferenceFragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.d("TAG", "onCreate au fragment");
+        
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         PreferenceManager.setDefaultValues(getActivity(), R.xml.pref_cat_available_updates, false);
         addPreferencesFromResource(R.xml.pref_cat_available_updates);
         
-        mUpdatesList = (PreferenceCategory) findPreference(Constants.KEY_AVAILABLE_UPDATES_PREFERENCE_CATEGORY);
-
+        mUpdatesList = (PreferenceCategory) findPreference(getString(R.string.available_updates_key));
+        
+        // Get the currently installed system Mod and Rom for later matching
+        mSystemMod = SysUtils.getSystemProperty(Customization.BOARD);
+        mSystemRom = SysUtils.getSystemProperty(Customization.SYS_PROP_MOD_VERSION);
+        
+        // Get reference to the FileIO class for file I/O
         fileIO = new FileIO(getActivity().getBaseContext());
 
         // Initialize the arrays
@@ -122,7 +131,7 @@ public class AvailableUpdatesFragment extends PreferenceFragment
             c.close();
         }
 
-//        updateLayout();
+        updateLayout();
 
     }
     

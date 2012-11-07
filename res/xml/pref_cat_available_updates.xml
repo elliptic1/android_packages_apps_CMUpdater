@@ -7,11 +7,11 @@
      The text of the license can be found in the LICENSE file
      or at https://www.gnu.org/licenses/gpl-2.0.txt
 -->
+
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <PreferenceCategory
-        android:key="@string/available_updates_fragment_key"
-        android:title="@string/available_updates_fragment_title" >
-    </PreferenceCategory>
+        android:key="@string/available_updates_key"
+        android:title="@string/available_updates_title" />
 
 </PreferenceScreen>

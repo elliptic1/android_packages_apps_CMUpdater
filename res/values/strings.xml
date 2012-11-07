@@ -11,6 +11,7 @@
 
     <!-- General strings -->
     <string name="app_name">CM Updater</string>
+    <string name="display_name">Updates</string>
     <string name="unknown">Unknown</string>
     <string name="empty"></string>
 
@@ -19,6 +20,7 @@
     <string name="menu_delete">Delete</string>
     <string name="menu_delete_all">Delete downloads</string>
     <string name="menu_system_info">System info</string>
+
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_no">No</string>
@@ -27,23 +29,15 @@
     <string name="dialog_close">Close</string>
 
     <!-- Settings strings -->
-    <string name="available_updates_fragment_title">Available Updates</string>
-    <string name="available_updates_fragment_key">com.cyanogenmod.updater.available_updates_category</string>
+    <string name="available_updates_title">Available updates</string>
     <string name="no_available_updates_intro">The last check did not find any available updates. To manually check for new updates, use the Refresh button.</string>
     <string name="new_update_summary">New</string>
     <string name="downloaded_update_summary">Downloaded</string>
     <string name="installed_update_summary">Installed</string>
     <string name="backup_rom_title">Create backup</string>
     <string name="backup_rom_summary">Backup existing ROM before updating</string>
-    <string name="update_fragment_title">Check for Updates</string>
-    <string name="update_fragment_key">com.cyanogenmod.updater.update_check_preference</string>
-    <string name="update_check_title">Update checking frequency</string>
-    <string name="update_check_key">com.cyanogenmod.updater.update_check_preference</string>
-    <string name="update_type_title">Update types</string>
-    <string name="update_type_key">com.cyanogenmod.updater.update_type_preference</string>
-    <string name="updates_button">updates buttom</string>
-    <string name="update_type_content_description">update type content description</string>
     
+    <string name="update_check_title">Check for Updates</string>
     <string name="check_manual">Manual</string>
     <string name="check_on_boot">On every boot</string>
     <string name="check_twice_daily">Twice daily</string>
@@ -51,18 +45,20 @@
     <string name="check_weekly">Weekly</string>
     <string name="check_bi_weekly">Bi-weekly</string>
     <string name="check_monthly">Monthly</string>
+    
+    <string name="update_type_title">Update types</string>
     <string name="type_all">All versions (Stable only)</string>
     <string name="type_all_incl_nightly">All versions (incl. Nightlies)</string>
     <string name="type_new">New versions (Stable only)</string>
     <string name="type_new_incl_nightly">New versions (incl. Nightlies)</string>
+    
+    <string name="updates_button_content_description">The update button image</string>
     <string name="notification_fragment_title">Notification Options</string>
-    <string name="notification_fragment_key">notification_fragment_key</string>
     <string name="notification_pref_title">Allow Notifications</string>
-    <string name="notification_pref_key">com.cyanogenmod.updater.notification_preference</string>
     <string name="notifications_on">Notifications are on</string>
     <string name="notifications_off">Notifications are off</string>
     <string name="ringtone_pref_title">Choose Ringtone</string>
-    <string name="ringtone_pref_key">com.cyanogenmod.updater.ringtone_preference</string>
+    <string name="ringtone_silent">Silent</string>
 
     <!-- Update checking -->
     <string name="checking_for_updates">Checking for updates</string>
@@ -86,12 +82,35 @@
 
     <!-- Apply update strings -->
     <string name="apply_update_dialog_title">Apply update</string>
-    <string name="apply_update_dialog_text">You are about to upgrade to {0}.\n\nIf you press Update, the device will restart itself in recovery mode to install the update.\n<string name="apply_trying_to_get_root_access">Trying to get root access to reboot in recovery mode</string><string name="apply_unable_to_reboot_toast">Unable to reboot into recovery</string><string name="apply_unable_to_reboot_toast">available_updates_fragment_keyUnable to reboot into recovery</string>
-        <!-- deleting -->
-	<string name="confirm_delete_dialog_title">Delete file</string><string name="confirm_delete_dialog_message">You are about to delete the downloaded update file, OK to proceed?</string><string name="confirm_delete_all_dialog_message">You are about to delete all downloaded update files, OK to proceed?</string><string name="delete_single_update_success_message">Update {0} deleted</string><string name="delete_updates_failure_message">There was an error deleting the update file</string><string name="delete_updates_noFolder_message">Update folder not found</string><string name="delete_updates_success_message">All downloaded updates deleted</string>
-        <!-- System info strings -->
-	<string name="sysinfo_device">Device:</string><string name="sysinfo_running">Running:</string><string name="sysinfo_last_check">Last check:</string>
-        <!-- changelog strings -->
-	<string name="no_changelog_alert">No changelog available</string><string name="failed_to_load_changelog">Unable to load changelog</string><string name="changelog_dialog_title">Changelog</string></string>
+    <string name="apply_update_dialog_text">You are about to upgrade to {0}.\n\nIf you press Update, the device will restart itself in recovery mode to install the update.\n</string>
+    <string name="apply_trying_to_get_root_access">Trying to get root access to reboot in recovery mode</string>
+    <string name="apply_unable_to_reboot_toast">Unable to reboot into recovery</string>
+    <string name="confirm_delete_dialog_title">Delete file</string>
+    <string name="confirm_delete_dialog_message">You are about to delete the downloaded update file, OK to proceed?</string>
+    <string name="confirm_delete_all_dialog_message">You are about to delete all downloaded update files, OK to proceed?</string>
+    <string name="delete_single_update_success_message">Update {0} deleted</string>
+    <string name="delete_updates_failure_message">There was an error deleting the update file</string>
+    <string name="delete_updates_noFolder_message">Update folder not found</string>
+    <string name="delete_updates_success_message">All downloaded updates deleted</string> 
+    
+    <!-- System info strings -->
+    <string name="sysinfo_device">Device:</string>
+    <string name="sysinfo_running">Running:</string>
+    <string name="sysinfo_last_check">Last check:</string> 
+    
+    <!-- Changelog strings -->
+    <string name="no_changelog_alert">No changelog available</string>
+    <string name="failed_to_load_changelog">Unable to load changelog</string>
+    <string name="changelog_dialog_title">Changelog</string>
+    
+    <!-- Keys -->
+    <string name="available_updates_key">available_updates_key</string>
+    <string name="notifications_checkbox_key">notifications_checkbox_key</string>
+    <string name="ringtone_pref_key">ringtone_pref_key</string>
+    <string name="update_check_key">update_check_key</string>
+    <string name="update_type_key">update_type_key</string>
+    <string name="notification_fragment_key">notification_fragment_key</string>
+    <string name="available_updates_fragment_key">available_updates_fragment_key</string>
+    <string name="update_fragment_key">update_fragment_key</string>
 
-	</resources>
+</resources>

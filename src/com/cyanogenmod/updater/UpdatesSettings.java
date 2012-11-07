@@ -39,9 +39,6 @@ public class UpdatesSettings extends PreferenceActivity implements IActivityMess
     private String mSystemMod;
     private String mSystemRom;
 
-    // // Without declaring these, there is a ClassNotFoundException during
-    // runtime
-    // // There must be a better solution.
     private AvailableUpdatesFragment mAvailableUpdatesFragment;
 
     @Override
@@ -130,7 +127,7 @@ public class UpdatesSettings extends PreferenceActivity implements IActivityMess
 
         // Build the message
         Date lastCheck = new Date(PreferenceManager.getDefaultSharedPreferences(this)
-                .getLong(Constants.PREF_LAST_UPDATE_CHECK, 0));
+                .getLong(Constants.LAST_UPDATE_CHECK_PREF, 0));
         String message = getString(R.string.sysinfo_device) + " " + mSystemMod + "\n\n"
                 + getString(R.string.sysinfo_running) + " " + mSystemRom + "\n\n"
                 + getString(R.string.sysinfo_last_check) + " " + lastCheck.toString();

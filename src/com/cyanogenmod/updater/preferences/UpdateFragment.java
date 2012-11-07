@@ -136,7 +136,7 @@ public class UpdateFragment extends PreferenceFragment implements OnSharedPrefer
 
         // Check if we need to schedule a new alarm
         if (updateFrequency > 0) {
-            Date lastCheck = new Date(mPrefs.getLong(Constants.PREF_LAST_UPDATE_CHECK, 0));
+            Date lastCheck = new Date(mPrefs.getLong(Constants.LAST_UPDATE_CHECK_PREF, 0));
             am.setRepeating(AlarmManager.RTC_WAKEUP, lastCheck.getTime() + updateFrequency,
                     updateFrequency, pi);
         }

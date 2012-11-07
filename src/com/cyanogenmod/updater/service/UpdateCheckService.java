@@ -183,7 +183,7 @@ public class UpdateCheckService extends Service {
         // Store the last update check time and ensure boot check completed is true
         Date d = new Date();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        prefs.edit().putLong(Constants.PREF_LAST_UPDATE_CHECK, d.getTime()).apply();
+        prefs.edit().putLong(Constants.LAST_UPDATE_CHECK_PREF, d.getTime()).apply();
         prefs.edit().putBoolean(Constants.BOOT_CHECK_COMPLETED, true).apply();
 
         int updateCountRoms = availableUpdates.getRomCount();
@@ -244,7 +244,7 @@ public class UpdateCheckService extends Service {
 
         // Get the type of update we should check for
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        int updateType = Integer.valueOf(prefs.getString(Constants.PREF_UPDATE_TYPE, "0"));
+        int updateType = Integer.valueOf(prefs.getString(Constants.UPDATE_TYPE_PREF, "0"));
         if (updateType == 0) {
             mShowAllRomUpdates = false;
             mShowNightlyRomUpdates = false;
