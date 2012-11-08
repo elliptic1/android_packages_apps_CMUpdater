@@ -10,136 +10,127 @@
 package com.cyanogenmod.updater;
 
 import android.app.ActionBar;
-import android.app.AlertDialog;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
-import com.cyanogenmod.updater.customization.Customization;
-import com.cyanogenmod.updater.interfaces.IActivityMessenger;
+import com.cyanogenmod.updater.customTypes.UpdateInfo;
+import com.cyanogenmod.updater.fragment.SettingsFragment;
 import com.cyanogenmod.updater.misc.Constants;
-import com.cyanogenmod.updater.preferences.AvailableUpdatesFragment;
-import com.cyanogenmod.updater.preferences.FragmentMessage;
-import com.cyanogenmod.updater.utils.SysUtils;
 
-import java.util.Date;
+public class UpdatesSettings extends Activity {
 
-public class UpdatesSettings extends PreferenceActivity implements IActivityMessenger {
-    private static final String TAG = "UpdatesSettings";
-//    private static final boolean DEBUG = false;
+	private static final int MENU_REFRESH = 0;
+	private static final int MENU_DELETE_ALL = 1;
+	private static final int MENU_SYSTEM_INFO = 2;
+	
+	private SettingsFragment mFragment;
 
-    private static final int MENU_REFRESH = 0;
-    private static final int MENU_DELETE_ALL = 1;
-    private static final int MENU_SYSTEM_INFO = 2;
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-    private String mSystemMod;
-    private String mSystemRom;
+		if (mFragment == null) {
+			mFragment = new SettingsFragment();
+		}
+		// Load the layouts
+		getFragmentManager().beginTransaction()
+				.replace(android.R.id.content, mFragment).commit();
 
-    private AvailableUpdatesFragment mAvailableUpdatesFragment;
+		// Set 'HomeAsUp' feature of the actionbar to fit better into Settings
+		final ActionBar bar = getActionBar();
+		bar.setDisplayHomeAsUpEnabled(true);
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+		// Turn on the Options Menu and update the layout
+		invalidateOptionsMenu();
 
-        setContentView(R.layout.main);
+	}
 
-        // Set 'HomeAsUp' feature of the actionbar to fit better into Settings
-        final ActionBar bar = getActionBar();
-        bar.setDisplayHomeAsUpEnabled(true);
+	@Override
+	public void onStart() {
+		super.onStart();
 
-        // Turn on the Options Menu
-        invalidateOptionsMenu();
+	}
 
-    }
-    
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+	@Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
 
-        menu.add(0, MENU_REFRESH, 0, R.string.menu_refresh)
-                .setIcon(R.drawable.ic_menu_refresh)
-                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS
-                        | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+        // Check if we need to refresh the screen to show new updates
+        boolean doCheck = intent.getBooleanExtra(Constants.CHECK_FOR_UPDATE, false);
+        if (doCheck) {
+        	mFragment.updateLayout();
+        }
+        
+		if (mFragment == null) {
+			mFragment = new SettingsFragment();
+		}
 
-        menu.add(0, MENU_DELETE_ALL, 0, R.string.menu_delete_all)
-                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-
-        menu.add(0, MENU_SYSTEM_INFO, 0, R.string.menu_system_info)
-                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-            case MENU_REFRESH:
-                // send update notice to updateFragment
-                if (mAvailableUpdatesFragment != null) {
-
-                    mAvailableUpdatesFragment.checkForUpdates();
-                } else {
-                    Log.e(TAG, "update Fragment was null in menu refresh");
+        // Check if we have been asked to start an update
+        boolean startUpdate = intent.getBooleanExtra(Constants.START_UPDATE, false);
+        if (startUpdate) {
+            UpdateInfo ui = (UpdateInfo) intent.getSerializableExtra(Constants.KEY_UPDATE_INFO);
+            if (ui != null) {
+                UpdatePreference pref = mFragment.findMatchingPreference(ui.getFileName());
+                if (pref != null) {
+                    pref.setStyle(UpdatePreference.STYLE_DOWNLOADED);
+                    mFragment.startUpdate(ui);
                 }
-                return true;
-
-            case MENU_DELETE_ALL:
-                if (mAvailableUpdatesFragment != null) {
-                    mAvailableUpdatesFragment.confirmDeleteAll();
-                } else {
-                    Log.e(TAG, "update Fragment was null in delete all");
-                }
-                return true;
-
-            case MENU_SYSTEM_INFO:
-                showSysInfo();
-                return true;
-
-            case android.R.id.home:
-                onBackPressed();
-                return true;
+            }
         }
 
-        return false;
-    }
-
-    @Override
-    public void sendMessage(FragmentMessage message) {
-        if (message.getPurpose() == FragmentMessage.updateField) {
-
-            Log.d(TAG,
-                    "will update the field "
-                            + getResources().getString(message.getPreferenceToUpdate()) + " with "
-                            + message.getBody());
-        } else {
-            Log.d(TAG, "some other message was sent");
+        // Check if we have been asked to start the 'download completed' functionality
+        boolean downloadCompleted = intent.getBooleanExtra(Constants.DOWNLOAD_COMPLETED, false);
+        if (downloadCompleted) {
+            long id = intent.getLongExtra(Constants.DOWNLOAD_ID, -1);
+            String fullPathname = intent.getStringExtra(Constants.DOWNLOAD_FULLPATH);
+            if (id != -1 && fullPathname != null) {
+                mFragment.downloadCompleted(id, fullPathname);
+            }
         }
     }
 
-    public void showSysInfo() {
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, MENU_REFRESH, 0, R.string.menu_refresh)
+				.setIcon(R.drawable.ic_menu_refresh)
+				.setShowAsActionFlags(
+						MenuItem.SHOW_AS_ACTION_ALWAYS
+								| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 
-        mSystemMod = SysUtils.getSystemProperty(Customization.BOARD);
-        mSystemRom = SysUtils.getSystemProperty(Customization.SYS_PROP_MOD_VERSION);
+		menu.add(0, MENU_DELETE_ALL, 0, R.string.menu_delete_all)
+				.setShowAsActionFlags(
+						MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 
-        // Build the message
-        Date lastCheck = new Date(PreferenceManager.getDefaultSharedPreferences(this)
-                .getLong(Constants.LAST_UPDATE_CHECK_PREF, 0));
-        String message = getString(R.string.sysinfo_device) + " " + mSystemMod + "\n\n"
-                + getString(R.string.sysinfo_running) + " " + mSystemRom + "\n\n"
-                + getString(R.string.sysinfo_last_check) + " " + lastCheck.toString();
+		menu.add(0, MENU_SYSTEM_INFO, 0, R.string.menu_system_info)
+				.setShowAsActionFlags(
+						MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.menu_system_info);
-        builder.setMessage(message);
-        builder.setPositiveButton(R.string.dialog_ok, null);
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        ((TextView) dialog.findViewById(android.R.id.message)).setTextAppearance(this,
-                android.R.style.TextAppearance_DeviceDefault_Small);
-    }
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case MENU_REFRESH:
+			mFragment.checkForUpdates();
+			return true;
+
+		case MENU_DELETE_ALL:
+			mFragment.confirmDeleteAll();
+			return true;
+
+		case MENU_SYSTEM_INFO:
+			mFragment.showSysInfo();
+			return true;
+
+		case android.R.id.home:
+			UpdatesSettings.this.onBackPressed();
+			return true;
+		}
+		return false;
+	}
 
 }

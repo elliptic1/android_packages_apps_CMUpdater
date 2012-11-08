@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-     Copyright (C) 2012 The CyanogenMod Project
+<!-- Copyright (C) 2012 The CyanogenMod Project
 
      Licensed under the GNU GPLv2 license
 
@@ -11,14 +10,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent"
-    android:minHeight="48dip" >
+    android:minHeight="48dip"
+    android:background="@android:color/transparent">
 
     <TextView
         android:id="@+android:id/title"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:padding="16dp" />
+        android:padding="16dp"
+        android:gravity="center" />
 
 </LinearLayout>
