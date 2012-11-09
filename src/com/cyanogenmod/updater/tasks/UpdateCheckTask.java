@@ -41,7 +41,8 @@ public class UpdateCheckTask extends AsyncTask<Void, Void, Void> {
 		if (mFragment != null) {
 			mParent = (UpdatesSettings) mFragment.getActivity();
 		} else {
-			mParent = null;
+			Log.e(TAG, "UpdateCheckTask started with null fragment arg");
+			mParent = new UpdatesSettings();
 		}
 		mProgressDialog = new ProgressDialog(mParent);
 		mProgressDialog.setTitle(R.string.checking_for_updates);

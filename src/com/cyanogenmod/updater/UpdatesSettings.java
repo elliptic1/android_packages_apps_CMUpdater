@@ -35,7 +35,7 @@ public class UpdatesSettings extends Activity {
 		if (mFragment == null) {
 			mFragment = new SettingsFragment();
 		}
-		// Load the layouts
+		// Load the fragment
 		getFragmentManager().beginTransaction()
 				.replace(android.R.id.content, mFragment).commit();
 
@@ -49,24 +49,19 @@ public class UpdatesSettings extends Activity {
 	}
 
 	@Override
-	public void onStart() {
-		super.onStart();
-
-	}
-
-	@Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
         // Check if we need to refresh the screen to show new updates
         boolean doCheck = intent.getBooleanExtra(Constants.CHECK_FOR_UPDATE, false);
-        if (doCheck) {
-        	mFragment.updateLayout();
-        }
         
 		if (mFragment == null) {
 			mFragment = new SettingsFragment();
 		}
+		
+        if (doCheck) {
+        	mFragment.updateLayout();
+        }
 
         // Check if we have been asked to start an update
         boolean startUpdate = intent.getBooleanExtra(Constants.START_UPDATE, false);

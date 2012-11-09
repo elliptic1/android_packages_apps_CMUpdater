@@ -27,7 +27,7 @@ import com.cyanogenmod.updater.customTypes.UpdateInfo;
 import com.cyanogenmod.updater.fragment.SettingsFragment;
 
 public class UpdatePreference extends Preference implements OnClickListener, OnLongClickListener {
-    private static final String TAG = "UpdatePreference";
+//    private static final String TAG = "UpdatePreference";
 
     private static final float DISABLED_ALPHA = 0.4f;
     public static final int STYLE_NEW = 1;

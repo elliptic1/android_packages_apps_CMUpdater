@@ -64,7 +64,7 @@ public class SettingsFragment extends PreferenceFragment implements
 		OnSharedPreferenceChangeListener {
 
 	private static final String TAG = "SettingsFragment";
-//	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = false;
 
 	private static String UPDATES_CATEGORY = "updates_category";
 
@@ -99,7 +99,11 @@ public class SettingsFragment extends PreferenceFragment implements
 		// Load the defaults
 		PreferenceManager.setDefaultValues(getActivity(), R.xml.main, false);
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+<<<<<<< HEAD
 
+=======
+		mPrefs.edit().clear().commit();
+>>>>>>> aaa1c02cf3ff6dae2e7d4076abb6f151ec35bcb4
 		// Load the preferences from an XML resource
 		addPreferencesFromResource(R.xml.main);
 		mUpdatesList = (PreferenceCategory) findPreference(UPDATES_CATEGORY);
@@ -187,6 +191,7 @@ public class SettingsFragment extends PreferenceFragment implements
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences mPrefs, String key) {
+<<<<<<< HEAD
 		if (mUpdateCheck != null) {
 			if (key.equals(mUpdateCheck.getKey())) {
 				String value = mPrefs.getString(key, ""
@@ -206,6 +211,27 @@ public class SettingsFragment extends PreferenceFragment implements
 						.apply();
 				mUpdateType.setSummary(mUpdateType.getEntries()[Integer
 						.valueOf(value)]);
+=======
+		if (mUpdateCheck == null || mUpdateType == null) {
+			Log.d(TAG, "one of them was null in OSPCL ");
+		} else {
+			Log.d(TAG, "changed was " + key);
+			Log.d(TAG, "muc key is " + mUpdateCheck.getKey());
+			Log.d(TAG, "mut key is " + mUpdateType.getKey());
+			if (key.equals(mUpdateCheck.getKey())) {
+				int value = Integer.valueOf(mPrefs.getString(key, ""
+						+ Constants.UPDATE_FREQ_AT_BOOT));
+				mPrefs.edit().putInt(Constants.UPDATE_CHECK_PREF, value)
+						.apply();
+				mUpdateCheck.setSummary(mapCheckValue(value));
+				scheduleUpdateService(value * 1000);
+
+			} else if (key.equals(mUpdateType.getKey())) {
+				int value = Integer.valueOf(mPrefs.getString(key,
+						Constants.UPDATE_INFO_BRANCH_STABLE));
+				mPrefs.edit().putInt(Constants.UPDATE_TYPE_PREF, value).apply();
+				mUpdateType.setSummary(mUpdateType.getEntries()[value]);
+>>>>>>> aaa1c02cf3ff6dae2e7d4076abb6f151ec35bcb4
 				checkForUpdates();
 			}
 		}
@@ -426,7 +452,11 @@ public class SettingsFragment extends PreferenceFragment implements
 
 	public void checkForUpdates() {
 		// Refresh the Layout when UpdateCheck finished
+<<<<<<< HEAD
 		UpdateCheckTask task = new UpdateCheckTask(this);
+=======
+		UpdateCheckTask task = new UpdateCheckTask(null);
+>>>>>>> aaa1c02cf3ff6dae2e7d4076abb6f151ec35bcb4
 		task.execute((Void) null);
 		updateLayout();
 	}
