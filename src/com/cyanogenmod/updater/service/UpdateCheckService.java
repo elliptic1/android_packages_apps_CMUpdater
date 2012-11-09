@@ -27,7 +27,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -182,7 +181,7 @@ public class UpdateCheckService extends Service {
 
         // Store the last update check time and ensure boot check completed is true
         Date d = new Date();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = getSharedPreferences("CMUpdate", Context.MODE_MULTI_PROCESS);
         prefs.edit().putLong(Constants.LAST_UPDATE_CHECK_PREF, d.getTime()).apply();
         prefs.edit().putBoolean(Constants.BOOT_CHECK_COMPLETED, true).apply();
 
@@ -243,8 +242,8 @@ public class UpdateCheckService extends Service {
         mCurrentBuildDate = Integer.valueOf(SysUtils.getSystemProperty(Customization.BUILD_DATE));
 
         // Get the type of update we should check for
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        int updateType = Integer.valueOf(prefs.getString(Constants.UPDATE_TYPE_PREF, "0"));
+        SharedPreferences prefs = getSharedPreferences("CMUpdate", Context.MODE_MULTI_PROCESS);
+        int updateType = prefs.getInt(Constants.UPDATE_TYPE_PREF, 0);
         if (updateType == 0) {
             mShowAllRomUpdates = false;
             mShowNightlyRomUpdates = false;

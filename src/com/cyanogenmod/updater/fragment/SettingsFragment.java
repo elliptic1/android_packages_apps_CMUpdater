@@ -426,7 +426,7 @@ public class SettingsFragment extends PreferenceFragment implements
 
 	public void checkForUpdates() {
 		// Refresh the Layout when UpdateCheck finished
-		UpdateCheckTask task = new UpdateCheckTask(this);
+		UpdateCheckTask task = new UpdateCheckTask(null);
 		task.execute((Void) null);
 		updateLayout();
 	}
