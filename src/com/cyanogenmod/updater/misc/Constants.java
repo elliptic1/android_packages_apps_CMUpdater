@@ -40,8 +40,9 @@ public class Constants {
 
     // Keys
     public static final String KEY_UPDATE_INFO = Customization.PACKAGE_FIRST_NAME + ".fullUpdateList";
-    public static final String KEY_AVAILABLE_UPDATES = Customization.PACKAGE_FIRST_NAME + ".available_updates";
-    
+    public static final String KEY_AVAILABLE_UPDATES = Customization.PACKAGE_FIRST_NAME + ".availableUpdates";
+    public static final String KEY_UPDATE_PREFERENCE = "update_preference";
+
     // Preferences
     public static final String ENABLE_PREF = "pref_enable_updates";
     public static final String BACKUP_PREF = "pref_backup_rom";

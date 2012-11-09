@@ -26,12 +26,11 @@ import java.util.Date;
 
 public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String TAG = "UpdateCheckReceiver";
-    private SharedPreferences prefs;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         // Load the required settings from preferences
-        prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int updateFrequency = prefs.getInt(Constants.UPDATE_CHECK_PREF, Constants.UPDATE_FREQ_WEEKLY);
 
         // Check if we are set to manual updates and don't do anything
@@ -74,7 +73,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
     private void scheduleUpdateService(Context context, int updateFrequency) {
         // Load the required settings from preferences
-        prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         Date lastCheck = new Date(prefs.getLong(Constants.LAST_UPDATE_CHECK_PREF, 0));
 
         // Get the intent ready

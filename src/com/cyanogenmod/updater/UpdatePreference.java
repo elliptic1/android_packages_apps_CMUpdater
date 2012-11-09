@@ -9,8 +9,8 @@
 
 package com.cyanogenmod.updater;
 
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.preference.Preference;
 import android.text.TextUtils;
@@ -24,11 +24,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cyanogenmod.updater.customTypes.UpdateInfo;
-import com.cyanogenmod.updater.preferences.AvailableUpdatesFragment;
-import com.cyanogenmod.updater.tasks.FileIO;
+import com.cyanogenmod.updater.fragment.SettingsFragment;
 
 public class UpdatePreference extends Preference implements OnClickListener, OnLongClickListener {
-//    private static final String TAG = "UpdatePreference";
+    private static final String TAG = "UpdatePreference";
 
     private static final float DISABLED_ALPHA = 0.4f;
     public static final int STYLE_NEW = 1;
@@ -36,7 +35,8 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
     public static final int STYLE_DOWNLOADED = 3;
     public static final int STYLE_INSTALLED = 4;
 
-    private final AvailableUpdatesFragment mParent;
+    private final UpdatesSettings mParent;
+    private final SettingsFragment mFragment;
     private ImageView mUpdatesButton;
     private TextView mTitleText;
     private TextView mSummaryText;
@@ -45,18 +45,15 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
     private String mTitle;
     private ProgressBar mProgressBar;
     private UpdateInfo mUpdateInfo = null;
-    private Context mContext;
-    private FileIO mFileIO;
 
-    public UpdatePreference(AvailableUpdatesFragment availableUpdatesFragment, UpdateInfo ui, String title, int style) {
-        super(availableUpdatesFragment.getActivity().getBaseContext(), null, R.style.UpdatesPreferenceStyle);
+    public UpdatePreference(SettingsFragment fragment, UpdateInfo ui, String title, int style) {
+        super((UpdatesSettings) fragment.getActivity(), null, R.style.UpdatesPreferenceStyle);
         setLayoutResource(R.layout.preference_updates);
-        mParent = availableUpdatesFragment;
+        mFragment = fragment;
+        mParent = (UpdatesSettings) mFragment.getActivity();
         mTitle = title;
         mStyle = style;
         mUpdateInfo = ui;
-        mContext = mParent.getActivity().getBaseContext();
-        mFileIO = new FileIO(mContext);
     }
 
     @Override
@@ -68,10 +65,10 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
         mUpdatesPref.setOnClickListener(this);
         mUpdatesPref.setOnLongClickListener(this);
 
-        mUpdatesButton = (ImageView) view.findViewById(R.id.updates_button);
-        mTitleText = (TextView) view.findViewById(android.R.id.title);
-        mSummaryText = (TextView) view.findViewById(android.R.id.summary);
-        mProgressBar = (ProgressBar) view.findViewById(R.id.download_progress_bar);
+        mUpdatesButton = (ImageView)view.findViewById(R.id.updates_button);
+        mTitleText = (TextView)view.findViewById(android.R.id.title);
+        mSummaryText = (TextView)view.findViewById(android.R.id.summary);
+        mProgressBar = (ProgressBar)view.findViewById(R.id.download_progress_bar);
 
         // Update the views
         updatePreferenceViews();
@@ -96,22 +93,20 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
 
     @Override
     public void onClick(View v) {
-        String changeLog = (TextUtils.isEmpty(mUpdateInfo.getChanges()) ? mParent.getResources()
-                .getString(R.string.no_changelog_alert) : mUpdateInfo.getChanges());
+        String changeLog = ( TextUtils.isEmpty(mUpdateInfo.getChanges()) ? mParent.getResources().getString(R.string.no_changelog_alert) : mUpdateInfo.getChanges() );
         if (changeLog.equals(mParent.getResources().getString(R.string.no_changelog_alert))
-                || changeLog.equals(mParent.getResources().getString(
-                        R.string.failed_to_load_changelog))) {
+                || changeLog.equals(mParent.getResources().getString(R.string.failed_to_load_changelog))) {
             // No changelog to show, display a toast
-            Toast.makeText(mContext, changeLog, Toast.LENGTH_SHORT).show();
+            Toast.makeText(mParent.getBaseContext(), changeLog, Toast.LENGTH_SHORT).show();
         } else {
             // Prepare the dialog box content
-            WebView chngLog = new WebView(mContext);
+            WebView chngLog = new WebView(mParent);
             chngLog.getSettings().setTextZoom(80);
             chngLog.setBackgroundColor(mParent.getResources().getColor(android.R.color.darker_gray));
             chngLog.loadDataWithBaseURL(null, changeLog, "text/html", "utf-8", null);
 
             // Prepare the dialog box
-            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            AlertDialog.Builder builder = new AlertDialog.Builder(mParent);
             builder.setTitle(mParent.getResources().getString(R.string.changelog_dialog_title));
             builder.setView(chngLog);
             builder.setPositiveButton(R.string.dialog_close, null);
@@ -121,14 +116,13 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
     }
 
     private void confirmDelete() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        AlertDialog.Builder builder = new AlertDialog.Builder(mParent);
         builder.setTitle(R.string.confirm_delete_dialog_title);
         builder.setMessage(R.string.confirm_delete_dialog_message);
         builder.setPositiveButton(R.string.dialog_yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // We are OK to delete, trigger it
-                mFileIO.deleteUpdate(getKey());
-                // updateLayout();
+                mFragment.deleteUpdate(getKey());
             }
         });
         builder.setNegativeButton(R.string.dialog_no, null);
@@ -175,7 +169,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
         return mUpdateInfo;
     }
 
-    public AvailableUpdatesFragment getParent() {
+    public Activity getParent() {
         return mParent;
     }
 
@@ -218,7 +212,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
                 mUpdatesButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View arg0) {
-                        mFileIO.startUpdate(mUpdateInfo);
+                        mFragment.startUpdate(mUpdateInfo);
                     }
                 });
                 mSummaryText.setText(R.string.downloaded_update_summary);
@@ -232,7 +226,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
                 mUpdatesButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View arg0) {
-                        mParent.stopDownload();
+                        mFragment.stopDownload();
                     }
                 });
                 mProgressBar.setVisibility(View.VISIBLE);
@@ -255,7 +249,7 @@ public class UpdatePreference extends Preference implements OnClickListener, OnL
                 mUpdatesButton.setOnClickListener(new OnClickListener() {
                     @Override
                     public void onClick(View arg0) {
-                        mParent.startDownload(getKey());
+                        mFragment.startDownload(getKey());
                     }
                 });
                 mSummaryText.setText(R.string.new_update_summary);

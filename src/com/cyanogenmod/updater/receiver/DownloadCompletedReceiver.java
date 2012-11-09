@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import com.cyanogenmod.updater.R;
@@ -33,7 +34,7 @@ public class DownloadCompletedReceiver extends BroadcastReceiver{
     public void onReceive(Context context, Intent intent) {
 
         // Get the ID of the currently running CMUpdater download and the one just finished
-        SharedPreferences prefs = context.getSharedPreferences("CMUpdate", Context.MODE_MULTI_PROCESS);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         long enqueue = prefs.getLong(Constants.DOWNLOAD_ID, -1);
         long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -2);
 
