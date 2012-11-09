@@ -8,9 +8,10 @@
      or at https://www.gnu.org/licenses/gpl-2.0.txt
 -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
-    android:title="@string/display_name" >
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/display_name"
+    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings">
 
     <ListPreference
         android:defaultValue="-1"
