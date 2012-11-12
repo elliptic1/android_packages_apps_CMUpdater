@@ -9,19 +9,26 @@
 
 package com.cyanogenmod.updater.misc;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 import android.util.Log;
 
 import com.cyanogenmod.updater.customTypes.FullUpdateInfo;
 import com.cyanogenmod.updater.customization.Customization;
 
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-
 public class State {
     private static final String TAG = "State";
-
+    
     public static void saveState(Context ctx, Serializable mAvailableUpdates) throws IOException {
         ObjectOutputStream oos = null;
         FileOutputStream fos = null;
@@ -73,4 +80,5 @@ public class State {
         }
         return availableUpdates;
     }
+    
 }

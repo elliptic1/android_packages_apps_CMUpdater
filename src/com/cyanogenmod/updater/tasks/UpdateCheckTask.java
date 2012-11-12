@@ -27,118 +27,113 @@ import com.cyanogenmod.updater.interfaces.IUpdateCheckService;
 import com.cyanogenmod.updater.interfaces.IUpdateCheckServiceCallback;
 
 public class UpdateCheckTask extends AsyncTask<Void, Void, Void> {
-	private static final String TAG = "UpdateCheckTask";
+    private static final String TAG = "UpdateCheckTask";
 
-	private IUpdateCheckService mService;
-	private boolean mBound;
-	private Intent mServiceIntent;
-	private final ProgressDialog mProgressDialog;
-	private final UpdatesSettings mParent;
-	private final SettingsFragment mFragment;
+    private IUpdateCheckService mService;
+    private boolean mBound;
+    private Intent mServiceIntent;
+    private final ProgressDialog mProgressDialog;
+    private static UpdatesSettings mParent;
+    private SettingsFragment mFragment;
 
-	public UpdateCheckTask(SettingsFragment fragment) {
-		mFragment = fragment;
-		if (mFragment != null) {
-			mParent = (UpdatesSettings) mFragment.getActivity();
-		} else {
-			Log.e(TAG, "UpdateCheckTask started with null fragment arg");
-			mParent = new UpdatesSettings();
-		}
-		mProgressDialog = new ProgressDialog(mParent);
-		mProgressDialog.setTitle(R.string.checking_for_updates);
-		mProgressDialog.setMessage(mParent.getResources().getString(
-				R.string.checking_for_updates));
-		mProgressDialog.setIndeterminate(true);
-		mProgressDialog.setCancelable(true);
-		mProgressDialog.setOnCancelListener(new OnCancelListener() {
-			public void onCancel(DialogInterface dialog) {
-				if (!isCancelled()) {
-					cancel(true);
-				}
-			}
-		});
-	}
+    public UpdateCheckTask(SettingsFragment fragment) {
 
-	@Override
-	protected void onPreExecute() {
-		mProgressDialog.show();
-		mServiceIntent = new Intent(IUpdateCheckService.class.getName());
-		ComponentName comp = mParent.startService(mServiceIntent);
-		if (comp == null) {
-			Log.e(TAG, "startService failed");
-			mBound = false;
-		} else {
-			mBound = mParent.bindService(mServiceIntent, mConnection, 0);
-		}
-	}
+        mFragment = fragment;
+        mParent = (UpdatesSettings) mFragment.getActivity();
+        mProgressDialog = new ProgressDialog(mParent);
+        mProgressDialog.setTitle(R.string.checking_for_updates);
+        mProgressDialog.setMessage(mParent.getResources().getString(R.string.checking_for_updates));
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setCancelable(true);
+        mProgressDialog.setOnCancelListener(new OnCancelListener() {
+            public void onCancel(DialogInterface dialog) {
+                if (!isCancelled()) {
+                    cancel(true);
+                }
+            }
+        });
+    }
+    
+    @Override
+    protected void onPreExecute() {
+        mProgressDialog.show();
+        mServiceIntent = new Intent(IUpdateCheckService.class.getName());
+        ComponentName comp = mParent.startService(mServiceIntent);
+        if (comp == null) {
+            Log.e(TAG, "startService failed");
+            mBound = false;
+        } else {
+            mBound = mParent.bindService(mServiceIntent, mConnection, 0);
+        }
+    }
 
-	@Override
-	protected Void doInBackground(Void... arg0) {
-		if (mBound) {
-			try {
-				while (mService == null) {
-					// Wait till the Service is bound
-				}
-				mService.checkForUpdates();
-			} catch (RemoteException e) {
-				Log.e(TAG, "Exception on calling UpdateCheckService", e);
-			}
-		}
-		return null;
-	}
+    @Override
+    protected Void doInBackground(Void... arg0) {
+        if (mBound) {
+            try {
+                while (mService == null) {
+                    // Wait till the Service is bound
+                }
+                mService.checkForUpdates();
+            } catch (RemoteException e) {
+                Log.e(TAG, "Exception on calling UpdateCheckService", e);
+            }
+        }
+        return null;
+    }
 
-	@Override
-	protected void onPostExecute(Void result) {
-		if (mBound) {
-			mParent.unbindService(mConnection);
-			mBound = false;
-		}
-		mParent.stopService(mServiceIntent);
-		mFragment.updateLayout();
-	}
+    @Override
+    protected void onPostExecute(Void result) {
+        if (mBound) {
+            mParent.unbindService(mConnection);
+            mBound = false;
+        }
+        mParent.stopService(mServiceIntent);
+        mFragment.updateLayout();
+    }
 
-	@Override
-	protected void onCancelled() {
-		if (mBound) {
-			mParent.unbindService(mConnection);
-			mBound = false;
-		}
-		mParent.stopService(mServiceIntent);
-		if (mProgressDialog != null) {
-			mProgressDialog.dismiss();
-		}
-		mFragment.updateLayout();
-		super.onCancelled();
-	}
+    @Override
+    protected void onCancelled() {
+        if (mBound) {
+            mParent.unbindService(mConnection);
+            mBound = false;
+        }
+        mParent.stopService(mServiceIntent);
+        if (mProgressDialog != null) {
+            mProgressDialog.dismiss();
+        }
+        mFragment.updateLayout();
+        super.onCancelled();
+    }
 
-	/**
-	 * Class for interacting with the main interface of the service.
-	 */
-	private final ServiceConnection mConnection = new ServiceConnection() {
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			mService = IUpdateCheckService.Stub.asInterface(service);
-			try {
-				mService.registerCallback(mCallback);
-			} catch (RemoteException e) {
-				Log.e(TAG, "RemoteException", e);
-			}
-		}
+    /**
+     * Class for interacting with the main interface of the service.
+     */
+    private final ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mService = IUpdateCheckService.Stub.asInterface(service);
+            try {
+                mService.registerCallback(mCallback);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+        }
 
-		public void onServiceDisconnected(ComponentName name) {
-			try {
-				mService.unregisterCallback(mCallback);
-			} catch (RemoteException e) {
-				Log.e(TAG, "RemoteException", e);
-			}
-			mService = null;
-		}
-	};
+        public void onServiceDisconnected(ComponentName name) {
+            try {
+                mService.unregisterCallback(mCallback);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+            mService = null;
+        }
+    };
 
-	private final IUpdateCheckServiceCallback mCallback = new IUpdateCheckServiceCallback.Stub() {
-		public void updateCheckFinished() throws RemoteException {
-			if (mProgressDialog != null) {
-				mProgressDialog.dismiss();
-			}
-		}
-	};
+    private final IUpdateCheckServiceCallback mCallback = new IUpdateCheckServiceCallback.Stub() {
+        public void updateCheckFinished() throws RemoteException {
+            if (mProgressDialog != null) {
+                mProgressDialog.dismiss();
+            }
+        }
+    };
 }

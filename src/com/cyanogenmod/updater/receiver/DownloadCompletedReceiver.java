@@ -27,7 +27,7 @@ import com.cyanogenmod.updater.utils.MD5;
 import java.io.File;
 
 public class DownloadCompletedReceiver extends BroadcastReceiver{
-    private static String TAG = "DownloadCompletedReceiver";
+    private static String TAG = "DownloadCompletedReceiver"; 
     private String mCompletedFileFullPath;
 
     @Override

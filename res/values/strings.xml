@@ -7,7 +7,7 @@
      or at https://www.gnu.org/licenses/gpl-2.0.txt
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-
+    
     <!-- General strings -->
     <string name="app_name">CM Updater</string>
     <string name="display_name">Updates</string>
@@ -60,6 +60,7 @@
     <string name="not_new_updates_found_ticker">New updates are available</string>
     <string name="not_new_updates_found_title">New updates</string>
     <string name="not_new_updates_found_body">{0} update(s) available for download</string>
+    <string name="data_connection_required">A data connection is required.</string>
 
     <!-- Downloads -->
     <string name="confirm_download_cancelation_dialog_title">Cancel download</string>
@@ -99,4 +100,5 @@
     <string name="no_changelog_alert">No changelog available</string>
     <string name="failed_to_load_changelog">Unable to load changelog</string>
     <string name="changelog_dialog_title">Changelog</string>
+    
 </resources>

@@ -9,51 +9,6 @@
 
 package com.cyanogenmod.updater.service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.RemoteCallbackList;
-import android.os.RemoteException;
-import android.util.Log;
-import android.widget.Toast;
-
-import com.cyanogenmod.updater.R;
-import com.cyanogenmod.updater.UpdatesSettings;
-import com.cyanogenmod.updater.interfaces.IUpdateCheckService;
-import com.cyanogenmod.updater.interfaces.IUpdateCheckServiceCallback;
-import com.cyanogenmod.updater.customTypes.FullUpdateInfo;
-import com.cyanogenmod.updater.customTypes.UpdateInfo;
-import com.cyanogenmod.updater.customization.Customization;
-import com.cyanogenmod.updater.misc.Constants;
-import com.cyanogenmod.updater.misc.State;
-import com.cyanogenmod.updater.utils.StringUtils;
-import com.cyanogenmod.updater.utils.SysUtils;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -62,12 +17,57 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.LinkedList;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.RemoteCallbackList;
+import android.os.RemoteException;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.widget.Toast;
+
+import com.cyanogenmod.updater.R;
+import com.cyanogenmod.updater.UpdatesSettings;
+import com.cyanogenmod.updater.customTypes.FullUpdateInfo;
+import com.cyanogenmod.updater.customTypes.UpdateInfo;
+import com.cyanogenmod.updater.customization.Customization;
+import com.cyanogenmod.updater.interfaces.IUpdateCheckService;
+import com.cyanogenmod.updater.interfaces.IUpdateCheckServiceCallback;
+import com.cyanogenmod.updater.misc.Constants;
+import com.cyanogenmod.updater.misc.State;
+import com.cyanogenmod.updater.utils.StringUtils;
+import com.cyanogenmod.updater.utils.SysUtils;
+
 public class UpdateCheckService extends Service {
     private static final String TAG = "UpdateCheckService";
 
-    // Set this to true if the update service should check for smaller, test updates
+    // Set this to true if the update service should check for smaller, test
+    // updates
     // This is for internal testing only
-    private static final boolean TESTING_DOWNLOAD = false;
+    private static final boolean TESTING_DOWNLOAD = true;
 
     private final RemoteCallbackList<IUpdateCheckServiceCallback> mCallbacks = new RemoteCallbackList<IUpdateCheckServiceCallback>();
     private String mSystemMod;
@@ -85,9 +85,11 @@ public class UpdateCheckService extends Service {
     @Override
     public void onCreate() {
         // Get the System Mod string
-        mSystemMod = TESTING_DOWNLOAD ? "cmtestdevice" : SysUtils.getSystemProperty(Customization.BOARD);
+        mSystemMod = TESTING_DOWNLOAD ? "cmtestdevice" : SysUtils
+                .getSystemProperty(Customization.BOARD);
         if (mSystemMod == null) {
-                Log.i(TAG, "Unable to determine System's Mod version. Updater will show all available updates");
+            Log.i(TAG,
+                    "Unable to determine System's Mod version. Updater will show all available updates");
         }
     }
 
@@ -95,10 +97,13 @@ public class UpdateCheckService extends Service {
     public void onStart(Intent intent, int startId) {
         // See if we have an intent to parse
         if (intent != null) {
-            boolean doCheck = intent.getBooleanExtra(Constants.CHECK_FOR_UPDATE, false);
+            boolean doCheck = intent.getBooleanExtra(
+                    Constants.CHECK_FOR_UPDATE, false);
             if (doCheck) {
-                // If we should check for updates on start, do so in a seperate thread
-                if (mTask == null || mTask.getStatus() == AsyncTask.Status.FINISHED) {
+                // If we should check for updates on start, do so in a seperate
+                // thread
+                if (mTask == null
+                        || mTask.getStatus() == AsyncTask.Status.FINISHED) {
                     Log.i(TAG, "Checking for updates...");
                     mTask = new AutoCheckForUpdatesTask();
                     mTask.execute();
@@ -116,10 +121,11 @@ public class UpdateCheckService extends Service {
         super.onDestroy();
     }
 
-    //*********************************************************
+    // *********************************************************
     // Supporting methods and classes
-    //*********************************************************
-    private class AutoCheckForUpdatesTask extends AsyncTask<Void, Void, Integer> {
+    // *********************************************************
+    private class AutoCheckForUpdatesTask extends
+            AsyncTask<Void, Void, Integer> {
         @Override
         protected Integer doInBackground(Void... params) {
             checkForNewUpdates();
@@ -129,12 +135,16 @@ public class UpdateCheckService extends Service {
 
     private final IUpdateCheckService.Stub mBinder = new IUpdateCheckService.Stub() {
 
-        public void registerCallback(IUpdateCheckServiceCallback cb) throws RemoteException {
-            if (cb != null) mCallbacks.register(cb);
+        public void registerCallback(IUpdateCheckServiceCallback cb)
+                throws RemoteException {
+            if (cb != null)
+                mCallbacks.register(cb);
         }
 
-        public void unregisterCallback(IUpdateCheckServiceCallback cb) throws RemoteException {
-            if (cb != null) mCallbacks.unregister(cb);
+        public void unregisterCallback(IUpdateCheckServiceCallback cb)
+                throws RemoteException {
+            if (cb != null)
+                mCallbacks.unregister(cb);
         }
 
         public void checkForUpdates() throws RemoteException {
@@ -146,22 +156,8 @@ public class UpdateCheckService extends Service {
         mToastHandler.sendMessage(mToastHandler.obtainMessage(0, ex));
     }
 
-    private boolean isOnline() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.isConnected()) {
-            return true;
-        }
-        return false;
-    }
-
     private void checkForNewUpdates() {
-        if (!isOnline()) {
-            // Only check for updates if the device is actually connected to a network
-            Log.i(TAG, "Could not check for updates. Not connected to the network.");
-            return;
-        }
-
+ 
         // Start the update check
         FullUpdateInfo availableUpdates;
         while (true) {
@@ -181,16 +177,12 @@ public class UpdateCheckService extends Service {
 
         // Store the last update check time and ensure boot check completed is true
         Date d = new Date();
-        SharedPreferences prefs = getSharedPreferences("CMUpdate", Context.MODE_MULTI_PROCESS);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.edit().putLong(Constants.LAST_UPDATE_CHECK_PREF, d.getTime()).apply();
         prefs.edit().putBoolean(Constants.BOOT_CHECK_COMPLETED, true).apply();
 
         int updateCountRoms = availableUpdates.getRomCount();
         int updateCount = availableUpdates.getUpdateCount();
-
-        // Write to log
-        Log.i(TAG, "The update check successfully completed at " + d.toString() + " and found "
-                + updateCountRoms + " updates.");
 
         if (updateCountRoms == 0) {
             mToastHandler.sendMessage(mToastHandler.obtainMessage(0, R.string.no_updates_found, 0));
@@ -239,11 +231,14 @@ public class UpdateCheckService extends Service {
         HttpClient romHttpClient = new DefaultHttpClient();
         HttpEntity romResponseEntity = null;
         mSystemRom = SysUtils.getModVersion();
-        mCurrentBuildDate = Integer.valueOf(SysUtils.getSystemProperty(Customization.BUILD_DATE));
+        mCurrentBuildDate = Integer.valueOf(SysUtils
+                .getSystemProperty(Customization.BUILD_DATE));
 
         // Get the type of update we should check for
-        SharedPreferences prefs = getSharedPreferences("CMUpdate", Context.MODE_MULTI_PROCESS);
-        int updateType = prefs.getInt(Constants.UPDATE_TYPE_PREF, 0);
+        SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(this);
+        int updateType = Integer.valueOf(prefs.getString(
+                Constants.UPDATE_TYPE_PREF, "0"));
         if (updateType == 0) {
             mShowAllRomUpdates = false;
             mShowNightlyRomUpdates = false;
@@ -261,16 +256,21 @@ public class UpdateCheckService extends Service {
         // Get the actual ROM Update Server URL
         try {
             PackageManager manager = this.getPackageManager();
-            URI RomUpdateServerUri = URI.create(getResources().getString(R.string.conf_update_server_url_def));
+            URI RomUpdateServerUri = URI.create(getResources().getString(
+                    R.string.conf_update_server_url_def));
             HttpPost romReq = new HttpPost(RomUpdateServerUri);
-            String getcmRequest = "{\"method\": \"get_all_builds\", \"params\":{\"device\":\""+mSystemMod+"\", \"channels\": [\"nightly\",\"stable\",\"snapshot\"]}}";
+            String getcmRequest = "{\"method\": \"get_all_builds\", \"params\":{\"device\":\""
+                    + mSystemMod
+                    + "\", \"channels\": [\"nightly\",\"stable\",\"snapshot\"]}}";
             romReq.setEntity(new ByteArrayEntity(getcmRequest.getBytes()));
 
             // Set the request headers
             romReq.addHeader("Cache-Control", "no-cache");
             try {
-                PackageInfo pinfo = manager.getPackageInfo(this.getPackageName(), 0);
-                romReq.addHeader("User-Agent", pinfo.packageName+"/"+pinfo.versionName);
+                PackageInfo pinfo = manager.getPackageInfo(
+                        this.getPackageName(), 0);
+                romReq.addHeader("User-Agent", pinfo.packageName + "/"
+                        + pinfo.versionName);
             } catch (android.content.pm.PackageManager.NameNotFoundException nnfe) {
                 // Do nothing
             }
@@ -278,7 +278,8 @@ public class UpdateCheckService extends Service {
             HttpResponse romResponse = romHttpClient.execute(romReq);
             int romServerResponse = romResponse.getStatusLine().getStatusCode();
             if (romServerResponse != HttpStatus.SC_OK) {
-                Log.e(TAG, "Server returned status code for ROM " + romServerResponse);
+                Log.e(TAG, "Server returned status code for ROM "
+                        + romServerResponse);
                 romException = true;
             }
 
@@ -293,7 +294,9 @@ public class UpdateCheckService extends Service {
         try {
             if (!romException) {
                 // Read the ROM Infos
-                BufferedReader romLineReader = new BufferedReader(new InputStreamReader(romResponseEntity.getContent()), 2 * 1024);
+                BufferedReader romLineReader = new BufferedReader(
+                        new InputStreamReader(romResponseEntity.getContent()),
+                        2 * 1024);
                 StringBuffer romBuf = new StringBuffer();
                 String romLine;
                 while ((romLine = romLineReader.readLine()) != null) {
@@ -304,7 +307,8 @@ public class UpdateCheckService extends Service {
                 LinkedList<UpdateInfo> romUpdateInfos = parseJSON(romBuf);
                 retValue.roms = getRomUpdates(romUpdateInfos);
             } else {
-                Log.e(TAG, "There was an exception on downloading the ROM JSON File");
+                Log.e(TAG,
+                        "There was an exception on downloading the ROM JSON File");
             }
         } finally {
             if (romResponseEntity != null)
@@ -323,12 +327,14 @@ public class UpdateCheckService extends Service {
         JSONObject mainJSONObject;
         try {
             mainJSONObject = new JSONObject(buf.toString());
-            JSONArray updateList = mainJSONObject.getJSONArray(Constants.JSON_UPDATE_LIST);
+            JSONArray updateList = mainJSONObject
+                    .getJSONArray(Constants.JSON_UPDATE_LIST);
             for (int i = 0, max = updateList.length(); i < max; i++) {
                 if (!updateList.isNull(i)) {
                     uis.add(parseUpdateJSONObject(updateList.getJSONObject(i)));
                 } else {
-                    Log.e(TAG, "There is an error in your JSON File (update part). Maybe a , after the last update");
+                    Log.e(TAG,
+                            "There is an error in your JSON File (update part). Maybe a , after the last update");
                 }
             }
         } catch (JSONException e) {
@@ -347,7 +353,8 @@ public class UpdateCheckService extends Service {
             ui.setMD5(obj.getString(Constants.JSON_MD5SUM).trim());
             ui.setBranchCode(obj.getString(Constants.JSON_BRANCH).trim());
             ui.setFileName(obj.getString(Constants.JSON_FILENAME).trim());
-            ui.setChanges(returnFullChangeLog(obj.getString(Constants.JSON_CHANGES)));
+            ui.setChanges(returnFullChangeLog(obj
+                    .getString(Constants.JSON_CHANGES)));
             ui.setChangelogUrl(obj.getString(Constants.JSON_CHANGES));
 
         } catch (JSONException e) {
@@ -357,7 +364,8 @@ public class UpdateCheckService extends Service {
     }
 
     private String returnFullChangeLog(String changeLogPath) {
-        String fullChangeLog = getResources().getString(R.string.no_changelog_alert);
+        String fullChangeLog = getResources().getString(
+                R.string.no_changelog_alert);
 
         HttpEntity changeLogResponseEntity = null;
         HttpClient changeLogHttpClient = new DefaultHttpClient();
@@ -366,13 +374,16 @@ public class UpdateCheckService extends Service {
             URI ChangeLogUpdateServerUri = URI.create(changeLogPath);
             HttpGet changeLogReq = new HttpGet(ChangeLogUpdateServerUri);
             changeLogReq.addHeader("Cache-Control", "no-cache");
-            HttpResponse changeLogResponse = changeLogHttpClient.execute(changeLogReq);
-            int changeLogServerResponse = changeLogResponse.getStatusLine().getStatusCode();
+            HttpResponse changeLogResponse = changeLogHttpClient
+                    .execute(changeLogReq);
+            int changeLogServerResponse = changeLogResponse.getStatusLine()
+                    .getStatusCode();
 
             if (changeLogServerResponse == HttpStatus.SC_OK) {
                 changeLogResponseEntity = changeLogResponse.getEntity();
                 BufferedReader changeLogLineReader;
-                changeLogLineReader = new BufferedReader(new InputStreamReader(changeLogResponseEntity.getContent()), 2 * 1024);
+                changeLogLineReader = new BufferedReader(new InputStreamReader(
+                        changeLogResponseEntity.getContent()), 2 * 1024);
                 try {
                     StringBuilder changeLogBuf = new StringBuilder();
                     String changeLogLine;
@@ -386,19 +397,28 @@ public class UpdateCheckService extends Service {
                                 if (changeLogBuf.length() != 0) {
                                     changeLogBuf.append("<br />");
                                 }
-                                changeLogBuf.append("<b><u>").append(changeLogLine).append("</u></b>").append("<br />");
+                                changeLogBuf.append("<b><u>")
+                                        .append(changeLogLine)
+                                        .append("</u></b>").append("<br />");
                             } else if (changeLogLine.startsWith("*")) {
-                                changeLogBuf.append("<br /><b>").append(changeLogLine.replaceAll("\\*", "")).append("</b>").append("<br />");
+                                changeLogBuf
+                                        .append("<br /><b>")
+                                        .append(changeLogLine.replaceAll("\\*",
+                                                "")).append("</b>")
+                                        .append("<br />");
                             } else {
-                                changeLogBuf.append("&#8226;&nbsp;").append(changeLogLine).append("<br />");
+                                changeLogBuf.append("&#8226;&nbsp;")
+                                        .append(changeLogLine).append("<br />");
                             }
                         }
                     }
                     fullChangeLog = changeLogBuf.toString();
                 } catch (IOException e) {
-                    fullChangeLog = getResources().getString(R.string.failed_to_load_changelog);
+                    fullChangeLog = getResources().getString(
+                            R.string.failed_to_load_changelog);
                 } catch (IllegalStateException e) {
-                    fullChangeLog = getResources().getString(R.string.failed_to_load_changelog);
+                    fullChangeLog = getResources().getString(
+                            R.string.failed_to_load_changelog);
                 } finally {
                     if (changeLogResponseEntity != null) {
                         changeLogResponseEntity.consumeContent();
@@ -410,9 +430,11 @@ public class UpdateCheckService extends Service {
                 }
             }
         } catch (IOException e) {
-            fullChangeLog = getResources().getString(R.string.failed_to_load_changelog);
+            fullChangeLog = getResources().getString(
+                    R.string.failed_to_load_changelog);
         } catch (IllegalArgumentException e) {
-            fullChangeLog = getResources().getString(R.string.failed_to_load_changelog);
+            fullChangeLog = getResources().getString(
+                    R.string.failed_to_load_changelog);
         }
 
         return fullChangeLog;
@@ -424,7 +446,8 @@ public class UpdateCheckService extends Service {
         }
 
         boolean allow = false;
-        if (ui.getBranchCode().equalsIgnoreCase(Constants.UPDATE_INFO_BRANCH_NIGHTLY)) {
+        if (ui.getBranchCode().equalsIgnoreCase(
+                Constants.UPDATE_INFO_BRANCH_NIGHTLY)) {
             if (nightlyAllowed) {
                 allow = true;
             }
@@ -434,11 +457,14 @@ public class UpdateCheckService extends Service {
         return allow;
     }
 
-    private LinkedList<UpdateInfo> getRomUpdates(LinkedList<UpdateInfo> updateInfos) {
+    private LinkedList<UpdateInfo> getRomUpdates(
+            LinkedList<UpdateInfo> updateInfos) {
         LinkedList<UpdateInfo> ret = new LinkedList<UpdateInfo>();
         for (int i = 0, max = updateInfos.size(); i < max; i++) {
             UpdateInfo ui = updateInfos.poll();
-            if (mShowAllRomUpdates || StringUtils.compareVersions(ui.getVersion(), mSystemRom,ui.getDate(),mCurrentBuildDate)) {
+            if (mShowAllRomUpdates
+                    || StringUtils.compareVersions(ui.getVersion(), mSystemRom,
+                            ui.getDate(), mCurrentBuildDate)) {
                 if (branchMatches(ui, mShowNightlyRomUpdates)) {
                     ret.add(ui);
                 }
@@ -448,7 +474,8 @@ public class UpdateCheckService extends Service {
     }
 
     @SuppressWarnings("unchecked")
-    private static FullUpdateInfo filterUpdates(FullUpdateInfo newList, FullUpdateInfo oldList) {
+    private static FullUpdateInfo filterUpdates(FullUpdateInfo newList,
+            FullUpdateInfo oldList) {
         FullUpdateInfo ful = new FullUpdateInfo();
         ful.roms = (LinkedList<UpdateInfo>) newList.roms.clone();
         ful.roms.removeAll(oldList.roms);
@@ -458,9 +485,11 @@ public class UpdateCheckService extends Service {
     private final Handler mToastHandler = new Handler() {
         public void handleMessage(Message msg) {
             if (msg.arg1 != 0) {
-                Toast.makeText(UpdateCheckService.this, msg.arg1, Toast.LENGTH_SHORT).show();
+                Toast.makeText(UpdateCheckService.this, msg.arg1,
+                        Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(UpdateCheckService.this, (String) msg.obj, Toast.LENGTH_SHORT).show();
+                Toast.makeText(UpdateCheckService.this, (String) msg.obj,
+                        Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -471,7 +500,8 @@ public class UpdateCheckService extends Service {
             try {
                 mCallbacks.getBroadcastItem(i).updateCheckFinished();
             } catch (RemoteException e) {
-                // The RemoteCallbackList will take care of removing the dead object for us
+                // The RemoteCallbackList will take care of removing the dead
+                // object for us
             }
         }
         mCallbacks.finishBroadcast();
